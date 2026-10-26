@@ -4,6 +4,8 @@
 
 The 26 October Ollama migration passed 101 unit/contract tests plus real Gemma 4 repository and screenshot calls. See the [migration evidence](OLLAMA_MIGRATION.md) for exact inputs, returned model and limitations. This supersedes the source-AI evidence gap in the historical UI-release table below; old checks are retained without relabeling them as new runs.
 
+Coverage presentation follow-up: the large partial-review warning is replaced by a collapsed "Review coverage / Partial" disclosure within "What was actually checked." The heading says "Review report ready," not that every check completed. Skipped-file counts, check statuses, exported limitations and fatal request errors remain intact. The production build and 103 unit/contract tests passed. Seven browser checks passed in 15.3 seconds (one duplicate viewport matrix skipped), including keyboard access to the disclosure at all four widths and retained exported coverage details.
+
 Date: 26 October 2026 (Asia/Kolkata, UTC+05:30). Environment: local macOS, Node 20.18.0, Next.js 16.4.3, Chromium via Playwright. Release checks cover the `ui-antigravity` redesign, refreshed logo and clarified web-app/optional-download flow, integrated with documentation base `c92e12d`. These are observed local checks, not hosted CI results or an accuracy benchmark.
 
 ## Current verification

@@ -13,7 +13,7 @@ The website-design workflow informed a restrained presentation-led interface: pa
 | Landing | Product preview, three-step story, repository/sample entry points |
 | Workspace | Repository, scope and checks sequence; outputs/privacy aside |
 | Synthetic sample | Clear synthetic identity and real-workspace link |
-| Results | Findings/report/documentation/prompt tabs, partial warnings and expandable investigation details |
+| Results | Findings/report/documentation/prompt tabs, compact expandable coverage notes and investigation details |
 | Guide | Anchored workflow, coverage, web-app/optional ZIP downloads and privacy sections |
 | Brand and entry points | Shared SVG logo/favicon, browser-first call to action, no-installation message; skill ZIP explicitly not an app installer |
 | Empty/loading/error/not-found | Consistent presentation and recovery controls |

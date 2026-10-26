@@ -41,16 +41,33 @@ test("UI routes, responsive layouts, recoverable failure and partial results", a
   await page.route("**/api/review-repository", route => route.fulfill({ contentType: "application/x-ndjson", body: JSON.stringify({ type: "result", result }) + "\n" }));
   await page.getByRole("button", { name: "Analyze repository", exact: true }).click();
   await expect(page.getByRole("heading", { name: "From findings to a fix plan." })).toBeVisible();
-  await expect(page.getByText("Some checks are incomplete", { exact: true })).toBeVisible();
+  await expect(page.getByText("Review report ready", { exact: true })).toBeVisible();
+  await expect(page.getByText("Some checks are incomplete", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".review-result .feedback-warning")).toHaveCount(0);
+  const coverageNotes = page.locator("#review-coverage-notes");
+  await expect(coverageNotes.locator("summary")).toContainText("Partial");
+  await expect(coverageNotes).not.toHaveAttribute("open", "");
+  await expect(coverageNotes.locator("p")).toBeHidden();
   for (const width of [375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: `docs/assets/ui/partial-result-${width}.png`, fullPage: true });
+    await coverageNotes.locator("summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(coverageNotes.locator("p")).toContainText("Some files were skipped");
+    await expect(coverageNotes.locator("p")).toContainText("service was unavailable");
+    await expect(coverageNotes.locator("p")).toBeVisible();
+    await page.keyboard.press("Enter");
+    await expect(coverageNotes.locator("p")).toBeHidden();
     await page.getByRole("button", { name: "Fix prompt", exact: true }).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: `docs/assets/ui/prompt-${width}.png`, fullPage: true });
     await page.getByRole("button", { name: "Findings", exact: true }).click();
   }
+  await page.getByRole("button", { name: "Full report", exact: true }).click();
+  await expect(page.locator(".artifact-panel pre")).toContainText("Truncated by limits: yes");
+  await expect(page.locator(".artifact-panel pre")).toContainText("Advisory service unavailable in this controlled UI test.");
+  await page.getByRole("button", { name: "Findings", exact: true }).click();
   await page.getByLabel("Filter by area").selectOption("testing");
   await expect(page.getByRole("heading", { name: "No findings in this selection." })).toBeVisible();
   await page.screenshot({ path: "docs/assets/ui/empty-findings-1440.png", fullPage: true });
