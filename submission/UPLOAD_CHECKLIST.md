@@ -1,11 +1,12 @@
 # Submission and Google Drive checklist
 
-The upload folder is `submission/Google_Drive_Upload/`. It contains exactly:
+The upload folder is `submission/Google_Drive_Upload/`. It contains:
 
 1. `Project_Submission_Report.pdf` - the four-page judge-facing report.
 2. `README.md` - a short navigation sheet with the repository, demo and documentation links.
+3. `Complete_Documentation_Package.zip` - every report, flowchart and supporting evidence asset in one file.
 
-Upload those two files to the organizer's requested Google Drive folder **only after checking the official requirements**. No upload has been performed. The source of the report also lives at `submission/Project_Submission_Report.pdf`; the copy in the upload folder is identical, not a separate report.
+Upload the ZIP for a complete package if permitted, or the PDF if that is what the organizer requests, **only after checking the official requirements**. No upload has been performed. The report also lives at `submission/Project_Submission_Report.pdf`; the copy in the upload folder is identical, not a separate report.
 
 ## Still required from the submission owner
 

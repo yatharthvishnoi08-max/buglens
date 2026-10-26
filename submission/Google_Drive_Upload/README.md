@@ -1,6 +1,6 @@
 # BugLens submission package
 
-This folder contains the four-page project report and this navigation sheet.
+This folder contains the four-page project report, this navigation sheet and `Complete_Documentation_Package.zip`. The ZIP collects all reports, architecture/flowchart diagrams and evidence. Use it as the single-file upload when allowed.
 
 - [Public repository and main README](https://github.com/yatharthvishnoi08-max/buglens)
 - [Live demonstration](https://buglens-rust.vercel.app/demo)

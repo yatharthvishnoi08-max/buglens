@@ -1,0 +1,27 @@
+flowchart LR
+    subgraph client ["Clients"]
+      futureClient["Browser or authorized client"]
+    end
+    subgraph gateway ["Proposed admission controls"]
+      admission["Authentication and request budget"]
+    end
+    subgraph service ["Proposed runtimes"]
+      jobApi["Job API"]
+      workerPool["Bounded review workers"]
+    end
+    subgraph async ["Proposed job transport"]
+      jobQueue["Durable queue"]
+    end
+    subgraph datastore ["Proposed storage"]
+      artifactStore["Encrypted artifacts with expiry"]
+    end
+    subgraph external ["Existing provider integrations"]
+      providers["GitHub, Google and OSV"]
+    end
+    futureClient -->|"Submit job"| admission
+    admission -->|"Validate and admit"| jobApi
+    jobApi -.->|"Enqueue"| jobQueue
+    workerPool -.->|"Consume jobs"| jobQueue
+    workerPool -->|"Write results"| artifactStore
+    jobApi -->|"Read authorized result"| artifactStore
+    workerPool -.->|"Bounded requests"| providers

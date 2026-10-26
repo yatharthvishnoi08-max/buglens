@@ -1,0 +1,21 @@
+flowchart TD
+    incoming["Multipart options and optional image"] --> validRequest{"Valid request and consent"}
+    validRequest -->|"No"| preError["JSON error response"]
+    validRequest -->|"Yes"| evidenceValidation["Validate problem and image"]
+    evidenceValidation --> snapshotLoad["Pin commit and load bounded archive"]
+    snapshotLoad --> staticRules["Run deterministic source checks"]
+    staticRules --> parallelChecks["Start requested external checks"]
+    parallelChecks --> sourceCheck["Optional Gemma source review"]
+    parallelChecks --> visualCheck["Optional Gemma screenshot review"]
+    parallelChecks --> dependencyCheck["Optional OSV dependency check"]
+    sourceCheck --> combineFindings["Validate and combine results"]
+    visualCheck --> combineFindings
+    dependencyCheck --> combineFindings
+    combineFindings --> compileArtifacts["Compile report, docs and prompts"]
+    compileArtifacts --> streamedResult["Stream result with coverage"]
+    evidenceValidation -.->|"Invalid"| streamError["Stream explicit error"]
+    snapshotLoad -.->|"Unavailable"| streamError
+    sourceCheck -.->|"Invalid after repair"| streamError
+    visualCheck -.->|"Invalid after repair"| streamError
+    dependencyCheck -.->|"Unavailable"| partialNote["Mark dependency check unavailable"]
+    partialNote --> combineFindings

@@ -4,6 +4,41 @@ Current source: local `ui-antigravity` working tree based on `7d1847f`; public d
 
 ## Component boundaries
 
+### Implemented deployment view
+
+```mermaid
+flowchart LR
+    subgraph client ["Browser"]
+      browserUi["React workspace"]
+    end
+    subgraph gateway ["Hosting"]
+      ingress["Vercel request routing"]
+    end
+    subgraph service ["Review runtimes"]
+      apiRuntime["Next.js Node API and shared pipeline"]
+      localCli["Local skill CLI and shared pipeline"]
+    end
+    subgraph external ["External services"]
+      githubSource["GitHub API and archive"]
+      googleModel["Google API - Gemma 4 only"]
+      osvService["OSV advisories"]
+    end
+    browserUi -->|"Multipart request"| ingress
+    ingress -->|"Route review"| apiRuntime
+    apiRuntime -.->|"GitHub: fetch snapshot"| githubSource
+    apiRuntime -.->|"Google: optional review"| googleModel
+    apiRuntime -.->|"OSV: optional query"| osvService
+    localCli -.->|"GitHub: fetch snapshot"| githubSource
+    localCli -.->|"Google: optional review"| googleModel
+    localCli -.->|"OSV: optional query"| osvService
+```
+
+[Standalone architecture SVG](assets/diagrams/architecture.svg).
+
+The Node API and local skill are alternative runtimes for the same library, not separate network microservices calling each other. API responses travel back through the hosting route as NDJSON; local CLI artifacts go to the local caller. Browser state, archives and intermediate results are memory-only, so there is no datastore node. Optional external calls occur only when requested. The diagram omits the legacy screenshot-only path for clarity.
+
+[Processing flowcharts](FLOWCHARTS.md) · [API reference](API_REFERENCE.md) · [Scalability assessment](SCALABILITY_REPORT.md) · [Security boundaries](SECURITY_AND_PRIVACY.md)
+
 | Layer | Responsibility | Source |
 | --- | --- | --- |
 | React containers | State, callbacks, fetch, stream parsing and navigation | [RepositoryWorkspace](../src/components/RepositoryWorkspace.tsx), [DemoWorkspace](../src/components/DemoWorkspace.tsx) |

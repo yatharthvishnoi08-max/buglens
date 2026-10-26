@@ -40,6 +40,22 @@ Browser tests cover desktop/mobile input-to-artifact journeys; a separate matrix
 
 *Release note: this screenshot shows the local, uncommitted `ui-antigravity` redesign. The live app remains the prior release; publishing this README does not deploy the UI.*
 
+## Complete technical documentation
+
+[Download all reports and diagrams in one ZIP](submission/Complete_Documentation_Package.zip) · [Start here](submission/START_HERE.md)
+
+| Read this | To understand |
+| --- | --- |
+| [Architecture](docs/architecture.md) | Actual runtime components and integrations |
+| [Flowcharts](docs/FLOWCHARTS.md) | User journey, processing, errors and partial results |
+| [Test report](docs/TEST_REPORT.md) | Observed passes, failures, fixtures and unverified checks |
+| [Scalability report](docs/SCALABILITY_REPORT.md) | Current limits, bottlenecks, proposed growth and load-test plan |
+| [API reference](docs/API_REFERENCE.md) | Multipart inputs and streaming output contract |
+| [Security and privacy](docs/SECURITY_AND_PRIVACY.md) | Safeguards, data transfers and remaining risks |
+| [Operations runbook](docs/OPERATIONS_RUNBOOK.md) | Release checks, failure triage and recovery planning |
+
+Scalability targets and proposed infrastructure are not completed work. No measured throughput claim is implied.
+
 ## Feature status
 
 | Feature | Status | Source path | Verification evidence |

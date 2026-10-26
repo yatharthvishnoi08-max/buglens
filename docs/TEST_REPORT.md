@@ -48,6 +48,14 @@ The prior audit recorded zero known production dependency vulnerabilities and th
 
 No arbitrary target repository was executed. No precision/recall, model accuracy, security certification, time-saved measurement or competitive ranking was established.
 
+## Scalability and resilience checks
+
+No load/soak, peak-memory, p95/p99 latency, concurrency-capacity or cost-per-review experiment has been performed. They are **Not Run**, not failures or implied passes. The [scalability report](SCALABILITY_REPORT.md) inventories source limits and proposes a measurement protocol; its future architecture is not deployed.
+
+This documentation expansion did not change application code or rerun the application suites. The observed results above are retained with their original scope. Diagram rendering, Markdown links and archive integrity are documentation checks and do not establish application correctness or capacity.
+
+Documentation checks on 26 October 2026: all four Mermaid diagrams parsed and rendered in local Chromium; exported images were visually inspected. The documentation bundle contains 74 files including its manifest; 86 internal Markdown links resolved during packaging. ZIP integrity testing returned no errors. The bundle excludes application source, dependencies, environment files and credentials; source links point to GitHub.
+
 ## Reproduce
 
 Use README setup, stop an existing development server, then run typecheck, unit tests, evals, build and browser tests in that order. Run `npm run check:secrets` before packaging/publishing. The UI-state test currently belongs to the local redesign; the documentation publication alone does not add it to the default branch. Integration must bring the UI and its test together.

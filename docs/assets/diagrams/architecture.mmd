@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph client ["Browser"]
+      browserUi["React workspace"]
+    end
+    subgraph gateway ["Hosting"]
+      ingress["Vercel request routing"]
+    end
+    subgraph service ["Review runtimes"]
+      apiRuntime["Next.js Node API and shared pipeline"]
+      localCli["Local skill CLI and shared pipeline"]
+    end
+    subgraph external ["External services"]
+      githubSource["GitHub API and archive"]
+      googleModel["Google API - Gemma 4 only"]
+      osvService["OSV advisories"]
+    end
+    browserUi -->|"Multipart request"| ingress
+    ingress -->|"Route review"| apiRuntime
+    apiRuntime -.->|"GitHub: fetch snapshot"| githubSource
+    apiRuntime -.->|"Google: optional review"| googleModel
+    apiRuntime -.->|"OSV: optional query"| osvService
+    localCli -.->|"GitHub: fetch snapshot"| githubSource
+    localCli -.->|"Google: optional review"| googleModel
+    localCli -.->|"OSV: optional query"| osvService
