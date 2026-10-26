@@ -19,4 +19,8 @@
 
 See `docs/verification.md` for the verified command results, `docs/demo.gif` for the recorded synthetic journey, and `evals/latest-results.json` for deterministic fixture results. The early live experiment required a simpler output prompt and a more visibly clipped synthetic fixture. Subtle clipping was initially classified as insufficient evidence. Do not present fixture results as evidence of live model accuracy, claim a measured quality improvement, or describe BugLens as a root-cause detector.
 
-Hosting is deployment-ready, with local production verification. No public deployment or GitHub repository URL has been created in this workspace. Publish through the team's hosting and GitHub accounts as part of submission; never include `.env.local` in a source upload. Award eligibility remains subject to the organizer's rules.
+Live demo: https://buglens-rust.vercel.app
+
+Public source: https://github.com/yatharthvishnoi08-max/buglens
+
+The Vercel production deployment and public GitHub repository are published. Desktop and mobile sample journeys passed on the hosted site. Deployment currently uses the CLI; automatic GitHub-to-Vercel deployment needs repository authorization. Never include `.env.local` in a source upload. The hackathon entry itself has not been submitted, and award eligibility remains subject to the organizer's rules.
