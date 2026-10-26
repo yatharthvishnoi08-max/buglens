@@ -1,5 +1,11 @@
 # Verification report
 
+## Copy-ready fix prompts — 26 October 2026
+
+The shared template now embeds repository/commit context, scoped issue evidence, implementation steps, acceptance criteria and actual test reporting. It removes the old explanatory footer from combined and per-finding prompts. Source-review limitations remain in reports and coverage details. Single-finding prompts cannot widen their stated task to an unrelated reported problem; screenshot-focused prompts include observations, unknowns and related source candidates.
+
+All 109 unit/contract tests passed, including six focused prompt regressions covering scope, empty findings, stale commits, serialized untrusted input and redaction. The production build passed. Seven browser checks passed (one duplicate viewport matrix skipped); desktop/mobile checks verify intercepted clipboard writes and downloaded prompt text against the complete generated prompt. These checks validate prompt construction and delivery, not the correctness of a downstream coding assistant's eventual patch.
+
 ## Latest provider update — Ollama Cloud
 
 The 26 October Ollama migration passed 101 unit/contract tests plus real Gemma 4 repository and screenshot calls. See the [migration evidence](OLLAMA_MIGRATION.md) for exact inputs, returned model and limitations. This supersedes the source-AI evidence gap in the historical UI-release table below; old checks are retained without relabeling them as new runs.

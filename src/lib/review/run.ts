@@ -36,7 +36,7 @@ export async function runRepositoryReview(input: ReviewInput, services: { load?:
   const findings = all.filter(f => { const key = `${f.path}:${f.line}:${f.title}`; if (seen.has(key)) return false; seen.add(key); return true; }).sort((a, b) => priority[a.severity] - priority[b.severity] || a.path.localeCompare(b.path)).slice(0, 100).map(f => {
     const file = snapshot.files.find(s => s.path === f.path);
     if (!file || !file.content.split(/\r?\n/)[f.line - 1]) throw new BugLensError("UNVERIFIED_FILE_REFERENCE", "A review finding could not be linked to a source line.");
-    return { ...f, focus: input.mode === "problem" && f.source === "gemma" ? "reported-problem" as const : "repository-review" as const, fixPrompt: buildFixPrompt(snapshot, [f], undefined, problem) };
+    return { ...f, focus: input.mode === "problem" && f.source === "gemma" ? "reported-problem" as const : "repository-review" as const, fixPrompt: buildFixPrompt(snapshot, [f], undefined, problem, { scope: "finding" }) };
   });
   const terms = searchTerms([problem, context?.actualBehavior, context?.expectedBehavior, visual?.analysis.summary].filter(Boolean).join(" "));
   const screenshotMatches = visual || problem ? snapshot.files.map(f => ({ path: f.path, rank: rankFile(f.path, f.content, terms) })).filter(f => f.rank.score > 0).sort((a, b) => b.rank.score - a.rank.score || a.path.localeCompare(b.path)).slice(0, 8).map(f => ({ path: f.path, reason: `Text overlap: ${f.rank.terms.join(", ") || "package metadata"}. Cause is unverified.` })) : [];

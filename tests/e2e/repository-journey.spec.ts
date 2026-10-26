@@ -26,11 +26,26 @@ test("repository-first problem input to report, documentation and fix prompt", a
   await expect(page.getByRole("heading", { name: "Large fixed width may overflow narrow screens" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await page.screenshot({ path: `docs/screenshots/${info.project.name}-repository-result.png` });
+  await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (text: string) => { (window as Window & { copiedPrompt?: string }).copiedPrompt = text; } } }));
+  const firstFinding = page.locator(".finding-card").first();
+  await firstFinding.getByText("Exact fix prompt for this finding", { exact: true }).click();
+  await expect(firstFinding.locator(".artifact-panel pre")).toContainText("fix only the listed finding");
+  await firstFinding.getByRole("button", { name: "Copy", exact: true }).click();
+  expect(await page.evaluate(() => (window as Window & { copiedPrompt?: string }).copiedPrompt)).toBe(result.findings[0]!.fixPrompt);
   for (const [view, filename, content] of [["Full report", "buglens-report.md", "Checkout actions are clipped on mobile"], ["Documentation", "buglens-remediation.md", "Acceptance checklist"], ["Fix prompt", "buglens-fix-prompt.txt", "PRIMARY REPORTED PROBLEM"]]) {
     await page.getByRole("button", { name: view, exact: true }).click();
     await expect(page.locator(".artifact-panel pre")).toContainText(content!);
     const downloaded = page.waitForEvent("download"); await page.getByRole("button", { name: "Download", exact: true }).click(); const download = await downloaded;
-    expect(download.suggestedFilename()).toBe(filename); expect(await readFile((await download.path())!, "utf8")).toContain(content!);
+    const downloadedText = await readFile((await download.path())!, "utf8");
+    expect(download.suggestedFilename()).toBe(filename); expect(downloadedText).toContain(content!);
+    if (view === "Fix prompt") {
+      expect(downloadedText).toBe(result.fixPrompt);
+      expect(downloadedText).not.toContain("BugLens did not execute");
+      expect(downloadedText).not.toContain("not a shell command");
+      await expect(page.locator(".artifact-panel pre")).toContainText("Acceptance criteria:");
+      await page.getByRole("button", { name: "Copy", exact: true }).click();
+      expect(await page.evaluate(() => (window as Window & { copiedPrompt?: string }).copiedPrompt)).toBe(result.fixPrompt);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   }
   expect(errors).toEqual([]); expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
