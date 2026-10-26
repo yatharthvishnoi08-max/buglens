@@ -2,7 +2,7 @@
 
 ## Scope and direction
 
-UI branch `ui-antigravity`, base `7d1847f314a15a41b08331cdd2b5d334079e60c2`. Application changes remain local and uncommitted. Person 3 / the integration owner owns review, merge, distribution rebuild and deployment. The user separately authorized publishing the README and supporting documentation to the default branch; that publication does not include the UI or deploy it.
+The UI was developed on `ui-antigravity` from base `7d1847f314a15a41b08331cdd2b5d334079e60c2`. On 26 October 2026 the user authorized publishing the UI redesign, refreshed logo and web-app/download wording together, superseding the earlier local-only hold. This source release integrates that work with the previously published documentation. GitHub publication and Vercel deployment remain separate steps.
 
 The website-design workflow informed a restrained presentation-led interface: paper background, deep-green primary actions, readable type, labeled product preview and progressive disclosure. Existing shared SVG icons remain; no added image/font dependency.
 
@@ -14,7 +14,8 @@ The website-design workflow informed a restrained presentation-led interface: pa
 | Workspace | Repository, scope and checks sequence; outputs/privacy aside |
 | Synthetic sample | Clear synthetic identity and real-workspace link |
 | Results | Findings/report/documentation/prompt tabs, partial warnings and expandable investigation details |
-| Guide | Anchored workflow, coverage, skill and privacy sections |
+| Guide | Anchored workflow, coverage, web-app/optional ZIP downloads and privacy sections |
+| Brand and entry points | Shared SVG logo/favicon, browser-first call to action, no-installation message; skill ZIP explicitly not an app installer |
 | Empty/loading/error/not-found | Consistent presentation and recovery controls |
 | Shared | SiteNavigation, FeedbackBanner, ReviewProgress, RepositoryWorkspaceView, DemoWorkspaceView, ProblemInputView |
 

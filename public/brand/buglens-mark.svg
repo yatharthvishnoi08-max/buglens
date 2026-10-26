@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <title>BugLens</title>
+  <rect width="64" height="64" rx="20" fill="#123C30"/>
+  <path d="M43.9 30.7A17 17 0 1 0 30.7 43.9" stroke="#F4F8EE" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="m39 39 11 11" stroke="#D5F695" stroke-width="7" stroke-linecap="round"/>
+  <path d="m24 20-2.5-3m10.5 3 2.5-3M21 27h-3m20 0h-3M21 33h-3m20 0h-3" stroke="#D5F695" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M26.5 21c-4.4 0-7 3.1-7 7.5 0 5.2 2.8 9 7 9V21Zm3 0c4.4 0 7 3.1 7 7.5 0 5.2-2.8 9-7 9V21Z" fill="#D5F695"/>
+</svg>

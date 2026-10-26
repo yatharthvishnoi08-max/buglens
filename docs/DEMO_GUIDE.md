@@ -3,7 +3,7 @@
 ## Starting points
 
 - Local redesigned UI: `http://127.0.0.1:3000/demo` after README setup.
-- [Published workspace](https://buglens-rust.vercel.app/demo): prior release, not this uncommitted redesign.
+- [Published workspace](https://buglens-rust.vercel.app/demo): verify the deployed version before recording; the redesigned interface is included in this source release.
 - Repository: `https://github.com/yatharthvishnoi08-max/buglens`.
 - Static review requires GitHub connectivity; AI needs server credentials and quota; OSV needs connectivity.
 - Keep credentials off screen. Pre-run a static review and retain its downloaded report before recording. Ninety seconds is a presentation plan, not guaranteed processing latency.
@@ -57,6 +57,6 @@ The existing `docs/demo.gif` depicts an older screenshot workflow, not the redes
 - Model unavailable/invalid output: report the error honestly and check server configuration/quota privately. Never substitute another model.
 - Unsupported file: provide readable UTF-8 text or a supported screenshot; do not rename a binary file.
 - No findings: review scope/exclusions. Zero findings does not prove correctness or security.
-- Live UI differs: these local changes are not published. See [handoff](UI_HANDOFF.md).
+- Live UI differs: source publication does not automatically deploy the app. Verify the latest Vercel release or record the local version. See [handoff](UI_HANDOFF.md).
 
 [Verification scope](TEST_REPORT.md) · [Architecture](architecture.md)

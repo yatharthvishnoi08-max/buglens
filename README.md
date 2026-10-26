@@ -29,7 +29,7 @@ Static review still requires GitHub connectivity. For a clearly labeled offline 
 
 ![BugLens redesigned landing page, with an explicitly labeled synthetic example](docs/assets/ui/landing-1440.png)
 
-*Preview of the local `ui-antigravity` redesign. The published app remains the prior release; documentation updates do not deploy the UI.*
+*The repository-first interface included in this source release, with the refreshed BugLens identity.*
 
 ## What you receive
 
@@ -69,9 +69,9 @@ The Node API loads a bounded GitHub archive pinned to a commit, runs static chec
 
 ### Recorded checks
 
-**94 unit/contract tests passed · 4 synthetic evaluation cases passed · Production build passed · 5 browser tests passed**
+**94 unit/contract tests passed · 4 synthetic evaluation cases passed · Production build passed · 7 browser tests passed**
 
-The recorded local run on 26 October 2026 tested base `7d1847f` plus the uncommitted UI redesign. Browser checks covered desktop/mobile journeys and a 375/768/1024/1440px layout matrix; one duplicate matrix invocation was intentionally skipped. Controlled repository responses exercise the real static pipeline on test data, not live provider availability.
+The recorded local release run on 26 October 2026 tested the UI redesign, refreshed logo and web-app/optional-download wording. Browser checks covered desktop/mobile journeys, actual ZIP downloads and a 375/768/1024/1440px layout matrix; one duplicate matrix invocation was intentionally skipped. Controlled repository responses exercise the real static pipeline on test data, not live provider availability.
 
 **Open evidence gap:** the newer live Gemma source-review path has no verified successful live result in the recorded checks. Earlier screenshot-only success does not establish source-review success. These checks are not a model-accuracy benchmark, complete security audit or scalability measurement.
 
@@ -117,7 +117,7 @@ From this source checkout:
 npm run skill:review -- --github https://github.com/yatharthvishnoi08-max/buglens --artifact report
 ```
 
-The [skill guide](skills/buglens/SKILL.md) covers standalone installation, problem inputs, screenshots and explicit authorization for external checks. Published downloadable distributions predate the pending UI integration.
+**The web app requires no installation.** The optional [agent skill ZIP](https://buglens-rust.vercel.app/buglens-skill.zip) contains instructions and scripts for a coding agent, not a desktop app or installer. The [skill guide](skills/buglens/SKILL.md) covers developer setup, problem inputs, screenshots and explicit authorization for external checks. The separate source ZIP contains the application code.
 
 ## Supported scope, privacy and limits
 
@@ -146,7 +146,7 @@ The [skill guide](skills/buglens/SKILL.md) covers standalone installation, probl
 
 ### Release and team status
 
-The existing deployment uses Vercel. The local redesign remains on `ui-antigravity` for the integration owner; no application deployment is performed by this README update. See the [UI handoff](docs/UI_HANDOFF.md).
+The deployment uses Vercel. This source release includes the repository-first UI, refreshed logo, responsive states and clearer web-app/optional-download guidance. GitHub publication and Vercel deployment are separate steps; verify the deployed version before recording a demo. See the [UI handoff](docs/UI_HANDOFF.md).
 
 Official challenge requirements and confirmed team names/contributions were not supplied. The submission owner must add them and verify eligibility before filing the entry. Team contributions are not inferred from repository ownership. Capacity, impact and competitive ranking are not claimed without evidence.
 

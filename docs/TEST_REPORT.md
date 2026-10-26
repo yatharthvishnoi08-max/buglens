@@ -1,6 +1,6 @@
 # Verification report
 
-Date: 26 October 2026 (Asia/Kolkata, UTC+05:30). Environment: local macOS, Node 20.18.0, Next.js 16.4.3, Chromium via Playwright. Source tested: base commit `7d1847f314a15a41b08331cdd2b5d334079e60c2` plus the uncommitted `ui-antigravity` UI work. These are observed local checks, not hosted CI results or an accuracy benchmark.
+Date: 26 October 2026 (Asia/Kolkata, UTC+05:30). Environment: local macOS, Node 20.18.0, Next.js 16.4.3, Chromium via Playwright. Release checks cover the `ui-antigravity` redesign, refreshed logo and clarified web-app/optional-download flow, integrated with documentation base `c92e12d`. These are observed local checks, not hosted CI results or an accuracy benchmark.
 
 ## Current verification
 
@@ -19,9 +19,10 @@ Date: 26 October 2026 (Asia/Kolkata, UTC+05:30). Environment: local macOS, Node 
 | T11 Public availability | Published workspace responds | **Pass: HTTP 200** | `curl --silent --show-error --location --max-time 20 --output /dev/null --write-out 'HTTP %{http_code}' https://buglens-rust.vercel.app/demo` | Observed 26 October; prior release, no hosted analysis submitted |
 | T12 Fresh live source AI | New Gemma source-review result | **Not Run in this pass** | Would require external source transfer and provider quota | Historical attempts failed; see below |
 | T13 Runtime audit of submitted repositories | Run arbitrary app/tests/browser/security scans | **Not Run / not implemented** | Not supported by product | Reports explicitly retain `runtimeVerified:false` |
-| T14 Secret check | No configured key or private env file in distributable files/client output | **Pass** | `npm run check:secrets` | 216 distributable files and 25 production client assets checked before final packaging; rerun before publication |
+| T14 Secret check | No configured key or private env file in distributable files/client output | **Pass** | `npm run check:secrets` | Release pass checked 248 distributable files and 25 production client assets |
+| T15 Web app / optional downloads | Main action opens browser workspace; optional skill downloads a ZIP; developer setup stays collapsed; logo and favicon load | **Pass: desktop and mobile** | `npm run test:e2e` | [Web-app entry regression](../tests/e2e/web-app-entry.spec.ts) |
 
-Final browser run: **5 passed, 1 intentionally skipped, 14.2 seconds**. The skipped duplicate is the mobile project invocation of the viewport matrix; that matrix runs once and explicitly tests all four requested widths. The ordinary mobile journeys run separately at 360x800.
+Release browser run: **7 passed, 1 intentionally skipped, 16.8 seconds**. The skipped duplicate is the mobile project invocation of the viewport matrix; that matrix runs once and explicitly tests all four requested widths. The ordinary mobile journeys run separately at 360x800. The earlier logo-only pass additionally checked the header at 320px.
 
 Browser journeys reported no uncaught page JavaScript errors. This is narrower than asserting there are no console/network warnings. The repository journey intercepts the HTTP response with data produced by the real static pipeline on a controlled snapshot. It does **not** prove a live GitHub, OSV or Gemma request succeeded. The sample uses explicit pre-authored synthetic model output.
 
@@ -52,10 +53,10 @@ No arbitrary target repository was executed. No precision/recall, model accuracy
 
 No load/soak, peak-memory, p95/p99 latency, concurrency-capacity or cost-per-review experiment has been performed. They are **Not Run**, not failures or implied passes. The [scalability report](SCALABILITY_REPORT.md) inventories source limits and proposes a measurement protocol; its future architecture is not deployed.
 
-This documentation expansion did not change application code or rerun the application suites. The observed results above are retained with their original scope. Diagram rendering, Markdown links and archive integrity are documentation checks and do not establish application correctness or capacity.
+The original documentation-only expansion did not rerun application suites. The subsequent UI release reran 94 unit/contract tests, all four synthetic evaluations, the production build and seven browser tests. Diagram rendering, Markdown links and archive integrity remain separate documentation checks and do not establish application correctness or capacity.
 
-Documentation checks on 26 October 2026: all four Mermaid diagrams parsed and rendered in local Chromium; exported images were visually inspected. The documentation bundle contains 74 files including its manifest; 86 internal Markdown links resolved during packaging. ZIP integrity testing returned no errors. The bundle excludes application source, dependencies, environment files and credentials; source links point to GitHub.
+Documentation checks on 26 October 2026: all four Mermaid diagrams parsed and rendered in local Chromium; exported images were visually inspected. The original bundle contained 74 files and 86 validated internal Markdown links; the refreshed release bundle adds branding evidence. Its manifest inventories the packaged files. The bundle excludes application source, dependencies, environment files and credentials; source links point to GitHub.
 
 ## Reproduce
 
-Use README setup, stop an existing development server, then run typecheck, unit tests, evals, build and browser tests in that order. Run `npm run check:secrets` before packaging/publishing. The UI-state test currently belongs to the local redesign; the documentation publication alone does not add it to the default branch. Integration must bring the UI and its test together.
+Use README setup, stop an existing development server, then run typecheck, unit tests, evals, build and browser tests in that order. Run `npm run check:secrets` before packaging/publishing. This release includes the UI-state matrix and the web-app/ZIP-download regression together with the UI changes.

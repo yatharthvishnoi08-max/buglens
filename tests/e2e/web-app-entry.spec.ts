@@ -1,0 +1,31 @@
+import { test, expect } from "@playwright/test";
+
+test("web app needs no install and agent downloads are explicitly optional ZIPs", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText("No installation needed", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Open web app", exact: true }).click();
+  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page.getByRole("heading", { name: "Start with your GitHub repository." })).toBeVisible();
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Guide", exact: true }).click();
+  const downloads = page.locator("#install");
+  await expect(downloads.getByRole("heading", { name: "Use BugLens in your browser." })).toBeVisible();
+  await expect(downloads).toContainText("It is not a desktop app or an installer");
+  await expect(downloads.getByRole("link", { name: "Open web app", exact: true })).toHaveAttribute("href", "/demo");
+  await expect(downloads.getByRole("link", { name: "Open web app", exact: true })).not.toHaveAttribute("download");
+  await expect(page.getByText("Install skill", { exact: true })).toHaveCount(0);
+  const skill = downloads.getByRole("link", { name: "Download agent skill (.zip)", exact: true });
+  await expect(skill).toHaveAttribute("href", "/buglens-skill.zip");
+  const pendingDownload = page.waitForEvent("download");
+  await skill.click();
+  const download = await pendingDownload;
+  expect(download.suggestedFilename()).toBe("buglens-skill.zip");
+  expect(await download.failure()).toBeNull();
+  await expect(downloads.getByRole("link", { name: "Download source code (.zip)", exact: true })).toHaveAttribute("download", "");
+  await expect(downloads.locator("details")).not.toHaveAttribute("open");
+  await downloads.getByText("Set up the optional agent skill", { exact: true }).click();
+  await expect(downloads.getByLabel("Optional agent skill setup commands")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await expect(page.locator(".brand-mark").first()).toHaveJSProperty("naturalWidth", 64);
+  const icon = page.locator('link[rel="icon"]');
+  await expect(icon).toHaveAttribute("href", /icon\.svg/);
+});

@@ -1,0 +1,9 @@
+.brand-lockup{display:inline-flex;align-items:center;gap:11px;white-space:nowrap;line-height:1}
+.brand-mark{display:block;flex-shrink:0;object-fit:contain;border-radius:31.25%}
+.brand-wordmark{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:27px;font-weight:800;letter-spacing:-1.25px;color:#123c30}
+.brand-wordmark-accent{font-weight:500;color:var(--green)}
+.brand-lockup--compact{gap:8px}
+.brand-lockup--compact .brand-wordmark{font-size:19px;letter-spacing:-.65px}
+.footer-identity{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.site-header .brand{min-height:44px}
+@media(max-width:600px){.brand-lockup{gap:8px}.brand-lockup:not(.brand-lockup--compact) .brand-mark{width:34px;height:34px}.brand-wordmark{font-size:23px;letter-spacing:-.9px}}

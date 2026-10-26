@@ -2,7 +2,7 @@
 
 ## Current arrangement
 
-Next.js Node app on Vercel, with a separate reusable local skill. The recorded deployment used CLI publication; automatic GitHub deployment was not connected. Verify the actual account configuration before release. Documentation commits do not publish the pending UI redesign.
+Next.js Node app on Vercel, with a separate optional agent-skill ZIP. The web app needs no user installation. The recorded deployment used CLI publication; automatic GitHub deployment was not connected. Verify the actual account configuration before release. Pushing code does not by itself confirm deployment.
 
 There is no durable queue, database, saved review history or implemented operational dashboard. Owner, on-call rotation and production SLOs have not been supplied.
 
@@ -19,7 +19,7 @@ npm run test:e2e
 npm run check:secrets
 ```
 
-The browser tests are controlled/synthetic where documented. They do not replace a live integration check. New UI matrix tests remain part of the local UI branch until integration.
+The browser tests are controlled/synthetic where documented. They do not replace a live integration check. This source release includes the UI matrix and web-app/ZIP-download regression tests.
 
 ## Authorized release gate
 
