@@ -1,0 +1,5 @@
+{
+  "expectedBehavior": "Both checkout actions should remain visible without horizontal overflow.",
+  "actualBehavior": "On a 390px-wide viewport, the Continue button extends beyond the right side of the checkout page. Desktop appears normal.",
+  "environment": "Viewport: 390 × 844. Browser and operating system unknown."
+}

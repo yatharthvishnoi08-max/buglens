@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "matches": {
+      "maxItems": 12,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "symbol": {
+            "type": "string",
+            "pattern": "^[A-Za-z_$][\\w$]*$"
+          },
+          "matchReason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "verified": {
+            "type": "boolean",
+            "const": true
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "hypothesis"
+            ]
+          },
+          "line": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "excerpt": {
+            "type": "string",
+            "maxLength": 600
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "route",
+              "component",
+              "style",
+              "test",
+              "metadata",
+              "source"
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "matchReason",
+          "verified",
+          "relationship",
+          "line",
+          "excerpt",
+          "sha256",
+          "score",
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "facts": {
+      "maxItems": 30,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,59}$"
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "source": {
+            "type": "string",
+            "const": "repository"
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "claim",
+          "source",
+          "evidence",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "hypotheses": {
+      "maxItems": 12,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,59}$"
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "source": {
+            "type": "string",
+            "const": "hypothesis"
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "claim",
+          "source",
+          "evidence",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "searchTerms": {
+      "maxItems": 15,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scannedFiles": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "rg",
+        "node"
+      ]
+    },
+    "limitations": {
+      "maxItems": 10,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "matches",
+    "facts",
+    "hypotheses",
+    "searchTerms",
+    "scannedFiles",
+    "method",
+    "limitations"
+  ],
+  "additionalProperties": false
+}

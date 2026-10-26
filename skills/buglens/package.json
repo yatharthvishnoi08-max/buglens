@@ -1,0 +1,15 @@
+{
+  "name": "buglens-agent-skill",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "zod": "^4.6.7",
+    "sharp": "^0.35.5"
+  }
+}

@@ -1,0 +1,4 @@
+export function Icon({ name = "lens", size = 20 }: { name?: "lens" | "arrow" | "check" | "file" | "image" | "copy" | "download" | "alert"; size?: number }) {
+  const paths = { lens: <><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5M10 7v6M7 10h6"/></>, arrow: <path d="M4 12h16m-6-6 6 6-6 6"/>, check: <path d="m5 12 4 4 10-10"/>, file: <><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></>, image: <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1"/><path d="m3 17 6-5 4 3 3-3 5 5"/></>, copy: <><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 8V3H3v12h5"/></>, download: <><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></>, alert: <><path d="m12 3 10 18H2zM12 9v4M12 16v1"/></> };
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+}

@@ -1,0 +1,11 @@
+{
+  "status": "insufficient",
+  "summary": "No software interface is visible",
+  "evidence": [],
+  "unknowns": [
+    "The reported interface"
+  ],
+  "forbiddenInferences": [
+    "A bug cannot be inferred from the reporter text alone."
+  ]
+}

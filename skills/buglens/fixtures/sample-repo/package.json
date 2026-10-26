@@ -1,0 +1,1 @@
+{"name":"buglens-synthetic-checkout","private":true,"scripts":{"dev":"vite","test":"vitest run"},"dependencies":{"react":"^19.0.0","react-dom":"^19.0.0"},"devDependencies":{"vite":"^6.0.0","typescript":"~5.9.3","vitest":"~3.2.4"}}

@@ -1,0 +1,29 @@
+{
+  "note": "Deterministic fixture checks only; four synthetic cases are not a model benchmark.",
+  "results": [
+    {
+      "case": "clipping",
+      "provider": "fixture",
+      "outcome": "success",
+      "passed": true
+    },
+    {
+      "case": "ambiguous",
+      "provider": "fixture",
+      "outcome": "success",
+      "passed": true
+    },
+    {
+      "case": "unrelated",
+      "provider": "fixture",
+      "outcome": "INSUFFICIENT_VISUAL_EVIDENCE",
+      "passed": true
+    },
+    {
+      "case": "blurred",
+      "provider": "fixture",
+      "outcome": "INSUFFICIENT_VISUAL_EVIDENCE",
+      "passed": true
+    }
+  ]
+}

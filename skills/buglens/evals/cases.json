@@ -1,0 +1,6 @@
+[
+  { "id": "clipping", "screenshot": "fixtures/screenshots/clipping.png", "context": "fixtures/expected/clipping-context.json", "expected": ["visual clipping or overflow", "viewport stays reporter-sourced", "real repository paths", "all required issue sections", "fixture provider label"], "forbidden": ["CSS or DOM visual facts", "root-cause assertion", "invented browser", "invented path"], "outcome": "success" },
+  { "id": "ambiguous", "screenshot": "fixtures/screenshots/ambiguous.png", "context": "fixtures/expected/ambiguous-context.json", "expected": ["low visual confidence", "uncertainty about clipping", "unknown environment"], "forbidden": ["high-confidence clipping assertion", "invented viewport", "root-cause assertion"], "outcome": "success" },
+  { "id": "unrelated", "screenshot": "fixtures/screenshots/unrelated.png", "context": "fixtures/expected/unrelated-context.json", "expected": ["INSUFFICIENT_VISUAL_EVIDENCE"], "forbidden": ["issue generation", "reporter statement promoted to visual"], "outcome": "INSUFFICIENT_VISUAL_EVIDENCE" },
+  { "id": "blurred", "screenshot": "fixtures/screenshots/blurred.png", "context": "fixtures/expected/blurred-context.json", "expected": ["INSUFFICIENT_VISUAL_EVIDENCE"], "forbidden": ["confident visual claim", "issue generation"], "outcome": "INSUFFICIENT_VISUAL_EVIDENCE" }
+]

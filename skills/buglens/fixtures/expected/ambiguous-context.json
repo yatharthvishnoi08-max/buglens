@@ -1,0 +1,5 @@
+{
+  "expectedBehavior": "Both checkout actions should remain visible without horizontal overflow.",
+  "actualBehavior": "The checkout actions appear crowded. I cannot tell whether the right edge is cut off.",
+  "environment": "Browser, operating system and viewport unknown."
+}

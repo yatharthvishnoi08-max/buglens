@@ -1,0 +1,21 @@
+{
+  "status": "sufficient",
+  "summary": "Checkout actions appear crowded",
+  "evidence": [
+    {
+      "id": "visual_1",
+      "source": "visual",
+      "claim": "The two checkout actions are close together; the screenshot does not clearly establish clipping.",
+      "evidence": "The action labels are readable, but their proximity leaves the reported boundary uncertain.",
+      "confidence": "low"
+    }
+  ],
+  "unknowns": [
+    "Whether the action is actually clipped",
+    "Browser and operating system",
+    "Viewport and zoom level"
+  ],
+  "forbiddenInferences": [
+    "Crowded controls alone do not establish a layout defect or a cause."
+  ]
+}

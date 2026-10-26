@@ -1,0 +1,323 @@
+{
+  "visualAnalysis": {
+    "status": "sufficient",
+    "summary": "Checkout action is clipped at the right edge",
+    "evidence": [
+      {
+        "id": "observation_1",
+        "claim": "The right side of the Continue action extends past the visible checkout area.",
+        "source": "visual",
+        "evidence": "At the lower right, the colored action continues beyond the image boundary.",
+        "confidence": "high"
+      },
+      {
+        "id": "reporter_expectedbehavior",
+        "claim": "Both checkout actions should remain visible without horizontal overflow.",
+        "source": "reporter",
+        "evidence": "Both checkout actions should remain visible without horizontal overflow.",
+        "confidence": "high"
+      },
+      {
+        "id": "reporter_actualbehavior",
+        "claim": "On a 390px-wide viewport, the Continue button extends beyond the right side of the checkout page. Desktop appears normal.",
+        "source": "reporter",
+        "evidence": "On a 390px-wide viewport, the Continue button extends beyond the right side of the checkout page. Desktop appears normal.",
+        "confidence": "high"
+      },
+      {
+        "id": "reporter_environment",
+        "claim": "Viewport: 390 × 844. Browser and operating system unknown.",
+        "source": "reporter",
+        "evidence": "Viewport: 390 × 844. Browser and operating system unknown.",
+        "confidence": "high"
+      }
+    ],
+    "unknowns": [
+      "Browser and operating system",
+      "Browser zoom level",
+      "Whether different label lengths change the symptom",
+      "Whether a candidate source file caused the visible symptom"
+    ],
+    "forbiddenInferences": [
+      "The image does not establish implementation details or a root cause.",
+      "Image dimensions do not prove the browser viewport."
+    ]
+  },
+  "reporterContext": {
+    "expectedBehavior": "Both checkout actions should remain visible without horizontal overflow.",
+    "actualBehavior": "On a 390px-wide viewport, the Continue button extends beyond the right side of the checkout page. Desktop appears normal.",
+    "environment": "Viewport: 390 × 844. Browser and operating system unknown."
+  },
+  "repositoryMatches": [
+    {
+      "path": "src/components/CheckoutActions.tsx",
+      "symbol": "CheckoutActions",
+      "matchReason": "Matched text: checkout, actions, action, continue, button. This establishes lexical overlap only.",
+      "verified": true,
+      "relationship": "hypothesis",
+      "line": 2,
+      "excerpt": "export function CheckoutActions() {",
+      "sha256": "c8c5b86078fb76c50ea3c82754febd905a6a130bf59f461c14d6e8a48bfcf023",
+      "score": 28,
+      "kind": "component"
+    },
+    {
+      "path": "src/pages/CheckoutPage.tsx",
+      "symbol": "CheckoutPage",
+      "matchReason": "Matched text: checkout, page, actions, action. This establishes lexical overlap only.",
+      "verified": true,
+      "relationship": "hypothesis",
+      "line": 4,
+      "excerpt": "export function CheckoutPage() {",
+      "sha256": "7aed5e9e8538af13f5ebe30ee704ba81afee7a290d12042a3a0f57720b87d035",
+      "score": 20,
+      "kind": "route"
+    },
+    {
+      "path": "src/styles/checkout.css",
+      "matchReason": "Matched text: checkout, button, actions, action. This establishes lexical overlap only.",
+      "verified": true,
+      "relationship": "hypothesis",
+      "line": 3,
+      "excerpt": ".checkout { max-width: 680px; margin: 0 auto; padding: 38px 24px; }",
+      "sha256": "f0859ad19c4c7cfd49bb44f267e1e4de71c106214e0077ba419e681a9b7cb7af",
+      "score": 14,
+      "kind": "style"
+    },
+    {
+      "path": "tests/checkout.test.ts",
+      "symbol": "markup",
+      "matchReason": "Matched text: checkout, continue, actions, action. This establishes lexical overlap only.",
+      "verified": true,
+      "relationship": "hypothesis",
+      "line": 6,
+      "excerpt": "  const markup = renderToStaticMarkup(createElement(CheckoutActions));",
+      "sha256": "c3bc8921747b0ba7ce9bbf35e02090f664a417379719c2e441392d1e2098eb5e",
+      "score": 14,
+      "kind": "test"
+    },
+    {
+      "path": "src/main.tsx",
+      "symbol": "routes",
+      "matchReason": "Matched text: checkout, page. This establishes lexical overlap only.",
+      "verified": true,
+      "relationship": "hypothesis",
+      "line": 4,
+      "excerpt": "export const routes = { \"/checkout\": CheckoutPage };",
+      "sha256": "4e5e7984a56d69466cdd192e82f9789ec4a581b324a756e1937d2375ae4278eb",
+      "score": 4,
+      "kind": "route"
+    },
+    {
+      "path": "package.json",
+      "matchReason": "Matched text: checkout. This establishes lexical overlap only.",
+      "verified": true,
+      "relationship": "hypothesis",
+      "line": 1,
+      "excerpt": "{\"name\":\"buglens-synthetic-checkout\",\"private\":true,\"scripts\":{\"dev\":\"vite\",\"test\":\"vitest run\"},\"dependencies\":{\"react\":\"^19.0.0\",\"react-dom\":\"^19.0.0\"},\"devDependencies\":{\"vite\":\"^6.0.0\",\"typescript\":\"~5.9.3\",\"vitest\":\"~3.2.4\"}}",
+      "sha256": "996c6c39008eb70f984e0e379e4d95c354f054363f47288b3d1617c5b2fb9fda",
+      "score": 3,
+      "kind": "metadata"
+    },
+    {
+      "path": "index.html",
+      "matchReason": "Matched text: checkout. This establishes lexical overlap only.",
+      "verified": true,
+      "relationship": "hypothesis",
+      "line": 1,
+      "excerpt": "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Synthetic checkout</title></head><body><div id=\"root\"></div><script type=\"module\" src=\"/src/main.tsx\"></script></body></html>",
+      "sha256": "6e29a8ff7faee872a66a69cf00192c5607cdea3604a66b6769155ec97884a427",
+      "score": 2,
+      "kind": "source"
+    }
+  ],
+  "repository": {
+    "matches": [
+      {
+        "path": "src/components/CheckoutActions.tsx",
+        "symbol": "CheckoutActions",
+        "matchReason": "Matched text: checkout, actions, action, continue, button. This establishes lexical overlap only.",
+        "verified": true,
+        "relationship": "hypothesis",
+        "line": 2,
+        "excerpt": "export function CheckoutActions() {",
+        "sha256": "c8c5b86078fb76c50ea3c82754febd905a6a130bf59f461c14d6e8a48bfcf023",
+        "score": 28,
+        "kind": "component"
+      },
+      {
+        "path": "src/pages/CheckoutPage.tsx",
+        "symbol": "CheckoutPage",
+        "matchReason": "Matched text: checkout, page, actions, action. This establishes lexical overlap only.",
+        "verified": true,
+        "relationship": "hypothesis",
+        "line": 4,
+        "excerpt": "export function CheckoutPage() {",
+        "sha256": "7aed5e9e8538af13f5ebe30ee704ba81afee7a290d12042a3a0f57720b87d035",
+        "score": 20,
+        "kind": "route"
+      },
+      {
+        "path": "src/styles/checkout.css",
+        "matchReason": "Matched text: checkout, button, actions, action. This establishes lexical overlap only.",
+        "verified": true,
+        "relationship": "hypothesis",
+        "line": 3,
+        "excerpt": ".checkout { max-width: 680px; margin: 0 auto; padding: 38px 24px; }",
+        "sha256": "f0859ad19c4c7cfd49bb44f267e1e4de71c106214e0077ba419e681a9b7cb7af",
+        "score": 14,
+        "kind": "style"
+      },
+      {
+        "path": "tests/checkout.test.ts",
+        "symbol": "markup",
+        "matchReason": "Matched text: checkout, continue, actions, action. This establishes lexical overlap only.",
+        "verified": true,
+        "relationship": "hypothesis",
+        "line": 6,
+        "excerpt": "  const markup = renderToStaticMarkup(createElement(CheckoutActions));",
+        "sha256": "c3bc8921747b0ba7ce9bbf35e02090f664a417379719c2e441392d1e2098eb5e",
+        "score": 14,
+        "kind": "test"
+      },
+      {
+        "path": "src/main.tsx",
+        "symbol": "routes",
+        "matchReason": "Matched text: checkout, page. This establishes lexical overlap only.",
+        "verified": true,
+        "relationship": "hypothesis",
+        "line": 4,
+        "excerpt": "export const routes = { \"/checkout\": CheckoutPage };",
+        "sha256": "4e5e7984a56d69466cdd192e82f9789ec4a581b324a756e1937d2375ae4278eb",
+        "score": 4,
+        "kind": "route"
+      },
+      {
+        "path": "package.json",
+        "matchReason": "Matched text: checkout. This establishes lexical overlap only.",
+        "verified": true,
+        "relationship": "hypothesis",
+        "line": 1,
+        "excerpt": "{\"name\":\"buglens-synthetic-checkout\",\"private\":true,\"scripts\":{\"dev\":\"vite\",\"test\":\"vitest run\"},\"dependencies\":{\"react\":\"^19.0.0\",\"react-dom\":\"^19.0.0\"},\"devDependencies\":{\"vite\":\"^6.0.0\",\"typescript\":\"~5.9.3\",\"vitest\":\"~3.2.4\"}}",
+        "sha256": "996c6c39008eb70f984e0e379e4d95c354f054363f47288b3d1617c5b2fb9fda",
+        "score": 3,
+        "kind": "metadata"
+      },
+      {
+        "path": "index.html",
+        "matchReason": "Matched text: checkout. This establishes lexical overlap only.",
+        "verified": true,
+        "relationship": "hypothesis",
+        "line": 1,
+        "excerpt": "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Synthetic checkout</title></head><body><div id=\"root\"></div><script type=\"module\" src=\"/src/main.tsx\"></script></body></html>",
+        "sha256": "6e29a8ff7faee872a66a69cf00192c5607cdea3604a66b6769155ec97884a427",
+        "score": 2,
+        "kind": "source"
+      }
+    ],
+    "facts": [
+      {
+        "id": "repository_1",
+        "claim": "A declaration named CheckoutActions exists in src/components/CheckoutActions.tsx at line 2.",
+        "source": "repository",
+        "evidence": "src/components/CheckoutActions.tsx:2; SHA-256 c8c5b86078fb76c50ea3c82754febd905a6a130bf59f461c14d6e8a48bfcf023",
+        "confidence": "high"
+      },
+      {
+        "id": "repository_2",
+        "claim": "A declaration named CheckoutPage exists in src/pages/CheckoutPage.tsx at line 4.",
+        "source": "repository",
+        "evidence": "src/pages/CheckoutPage.tsx:4; SHA-256 7aed5e9e8538af13f5ebe30ee704ba81afee7a290d12042a3a0f57720b87d035",
+        "confidence": "high"
+      },
+      {
+        "id": "repository_3",
+        "claim": "The file src/styles/checkout.css exists; its contents were read locally.",
+        "source": "repository",
+        "evidence": "src/styles/checkout.css:3; SHA-256 f0859ad19c4c7cfd49bb44f267e1e4de71c106214e0077ba419e681a9b7cb7af",
+        "confidence": "high"
+      },
+      {
+        "id": "repository_4",
+        "claim": "A declaration named markup exists in tests/checkout.test.ts at line 6.",
+        "source": "repository",
+        "evidence": "tests/checkout.test.ts:6; SHA-256 c3bc8921747b0ba7ce9bbf35e02090f664a417379719c2e441392d1e2098eb5e",
+        "confidence": "high"
+      },
+      {
+        "id": "repository_5",
+        "claim": "A declaration named routes exists in src/main.tsx at line 4.",
+        "source": "repository",
+        "evidence": "src/main.tsx:4; SHA-256 4e5e7984a56d69466cdd192e82f9789ec4a581b324a756e1937d2375ae4278eb",
+        "confidence": "high"
+      },
+      {
+        "id": "repository_6",
+        "claim": "The file package.json exists; its contents were read locally.",
+        "source": "repository",
+        "evidence": "package.json:1; SHA-256 996c6c39008eb70f984e0e379e4d95c354f054363f47288b3d1617c5b2fb9fda",
+        "confidence": "high"
+      },
+      {
+        "id": "repository_7",
+        "claim": "The file index.html exists; its contents were read locally.",
+        "source": "repository",
+        "evidence": "index.html:1; SHA-256 6e29a8ff7faee872a66a69cf00192c5607cdea3604a66b6769155ec97884a427",
+        "confidence": "high"
+      }
+    ],
+    "hypotheses": [
+      {
+        "id": "hypothesis_1",
+        "claim": "The layout or behavior associated with src/components/CheckoutActions.tsx may be relevant to the reported symptom; this relationship is unverified.",
+        "source": "hypothesis",
+        "evidence": "Textual search overlap only: Matched text: checkout, actions, action, continue, button. This establishes lexical overlap only.",
+        "confidence": "low"
+      },
+      {
+        "id": "hypothesis_2",
+        "claim": "The layout or behavior associated with src/styles/checkout.css may be relevant to the reported symptom; this relationship is unverified.",
+        "source": "hypothesis",
+        "evidence": "Textual search overlap only: Matched text: checkout, button, actions, action. This establishes lexical overlap only.",
+        "confidence": "low"
+      }
+    ],
+    "searchTerms": [
+      "wide",
+      "continue",
+      "button",
+      "checkout",
+      "page",
+      "desktop",
+      "actions",
+      "remain",
+      "horizontal",
+      "overflow",
+      "action",
+      "clipped",
+      "edge"
+    ],
+    "scannedFiles": 11,
+    "method": "rg",
+    "limitations": [
+      "Path and source text are verified; causal relationships are not."
+    ]
+  },
+  "issueMarkdown": "# The right side of the Continue action extends past the visible checkout area.\n\n## Observed visual evidence\n\n- The right side of the Continue action extends past the visible checkout area. (visual; high confidence)\n\n## Reporter-provided facts\n\n- Expected: Both checkout actions should remain visible without horizontal overflow. (reporter statement)\n- Actual: On a 390px-wide viewport, the Continue button extends beyond the right side of the checkout page. Desktop appears normal. (reporter statement)\n- Environment: Viewport: 390 × 844. Browser and operating system unknown. (reporter statement)\n\n## Verified repository context\n\n- `src/components/CheckoutActions.tsx` — file read and SHA-256 recorded; declaration `CheckoutActions` verified at line 2. This does not establish responsibility for the symptom.\n- `src/pages/CheckoutPage.tsx` — file read and SHA-256 recorded; declaration `CheckoutPage` verified at line 4. This does not establish responsibility for the symptom.\n- `src/styles/checkout.css` — file read and SHA-256 recorded. This does not establish responsibility for the symptom.\n- `tests/checkout.test.ts` — file read and SHA-256 recorded; declaration `markup` verified at line 6. This does not establish responsibility for the symptom.\n- `src/main.tsx` — file read and SHA-256 recorded; declaration `routes` verified at line 4. This does not establish responsibility for the symptom.\n- `package.json` — file read and SHA-256 recorded. This does not establish responsibility for the symptom.\n- `index.html` — file read and SHA-256 recorded. This does not establish responsibility for the symptom.\n\n## Suspected causes — not verified\n\n- The layout or behavior associated with src/components/CheckoutActions.tsx may be relevant to the reported symptom; this relationship is unverified. (low confidence)\n- The layout or behavior associated with src/styles/checkout.css may be relevant to the reported symptom; this relationship is unverified. (low confidence)\n\n## Unknown information\n\n- Browser and operating system\n- Browser zoom level\n- Whether different label lengths change the symptom\n- Whether a candidate source file caused the visible symptom\n\n## Reproduction steps\n\n1. After following the repository's installation instructions, start it with `npm run dev` (the script is declared in `package.json`; it has not been executed by BugLens).\n2. Open `/checkout` (route mapping verified in `src/main.tsx`).\n3. Set the viewport to 390 × 844, as supplied by the reporter.\n4. Inspect the reported behavior: “On a 390px-wide viewport, the Continue button extends beyond the right side of the checkout page. Desktop appears normal.”\n\n## Acceptance criteria\n\n- [ ] Both checkout actions should remain visible without horizontal overflow.\n- [ ] The reported symptom is absent at the supplied reproduction conditions.\n- [ ] Relevant controls and keyboard focus remain fully visible and usable.\n- [ ] The expected behavior remains intact at wider layouts.\n\n## Suggested verification\n\n- Inspect the existing test file `tests/checkout.test.ts`; BugLens has not executed it or established coverage.\n- Proposed: add or extend a browser layout test for the supplied viewport, if known.\n- Proposed: check 320 px, 390 px, and a desktop width, including keyboard focus. These are suggested test conditions, not observed environment facts.\n\n## Evidence provenance\n\n- Provider: SYNTHETIC FIXTURE MODE. Recorded evidence; no live model request.\n- Visual: image observations, subject to model error. Reporter: supplied statements, not independently verified.\n- Repository: local source reads with file and symbol verification. Hypothesis: unverified relevance only. Unknown: unresolved information.\n- Validation checks schema, source classification and path provenance; it does not prove a root cause or visual truth.\n- Inference boundary: The image does not establish implementation details or a root cause.\n- Inference boundary: Image dimensions do not prove the browser viewport.\n",
+  "validation": {
+    "valid": true,
+    "errors": []
+  },
+  "metadata": {
+    "provider": "fixture",
+    "model": "none — recorded synthetic evidence",
+    "returnedModel": null,
+    "fixtureId": "clipping"
+  },
+  "limitations": [
+    "Path and source text are verified; causal relationships are not.",
+    "Reproduction steps and suggested tests have not been executed.",
+    "Conservative text guards cannot prove that every natural-language visual claim is true. Review the draft before use.",
+    "The hosted demo inspects only the synthetic fixture repository, including for uploaded images."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "status": "sufficient",
+  "summary": "Checkout action is clipped at the right edge",
+  "evidence": [
+    {
+      "id": "visual_1",
+      "source": "visual",
+      "claim": "The right side of the Continue action extends past the visible checkout area.",
+      "evidence": "At the lower right, the colored action continues beyond the image boundary.",
+      "confidence": "high"
+    }
+  ],
+  "unknowns": [
+    "Browser and operating system",
+    "Browser zoom level",
+    "Whether different label lengths change the symptom"
+  ],
+  "forbiddenInferences": [
+    "The image does not establish implementation details or a root cause.",
+    "Image dimensions do not prove the browser viewport."
+  ]
+}

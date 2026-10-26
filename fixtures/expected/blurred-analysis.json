@@ -1,0 +1,11 @@
+{
+  "status": "insufficient",
+  "summary": "The image is too unclear to assess",
+  "evidence": [],
+  "unknowns": [
+    "The appearance of the reported action"
+  ],
+  "forbiddenInferences": [
+    "The reporter description is not visual evidence."
+  ]
+}
