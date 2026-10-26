@@ -1,203 +1,89 @@
 # BugLens
+Review your code. Understand the evidence. Plan the fix.
 
-BugLens is an open-source multimodal skill that turns visual bug symptoms into repository-ready issues. Give an agent a screenshot, reporter context and a repository. Gemma 4 extracts only visible evidence; local tools verify relevant files and symbols; a deterministic compiler separates observations, reporter statements, repository facts, hypotheses and unknowns. BugLens drafts issues—it does not claim a root cause or silently modify code.
+[Live app](https://buglens-rust.vercel.app/demo) · [Public repository](https://github.com/yatharthvishnoi08-max/buglens) · [Download agent skill](https://buglens-rust.vercel.app/buglens-skill.zip)
 
-**Turn visual symptoms into repository-ready issues.**
+BugLens is a repository-first code review workspace and reusable agent skill. Add a public GitHub repository, choose a broad static review or investigate a specific problem, and receive source-linked findings, a full report, remediation documentation, and exact prompts to paste into a coding agent.
 
-Source repository: [yatharthvishnoi08-max/buglens](https://github.com/yatharthvishnoi08-max/buglens).
+## Workflow
+1. Add an HTTPS GitHub repository URL. BugLens resolves the default branch to a fixed commit.
+2. Choose **Repository-wide review** or **Investigate a reported problem**.
+3. Optionally paste a description, error, stack trace, logs or code. Attach up to three supported UTF-8 text/code files or an optional PNG/JPEG/WebP screenshot with expected/actual behavior.
+4. Select Gemma 4 source review and/or npm dependency advisory checks. Read and accept the external processing notice when enabled.
+5. Inspect findings and coverage, then copy/download the report, documentation or fix prompt. Each finding also has its own prompt.
 
-## 1. Product distinction
+A reported problem drives source selection and the combined fix prompt. General repository findings remain separately labeled; they are not automatically presented as causes of that problem.
 
-The primary artifact is [the installable agent skill](skills/buglens/SKILL.md). The website demonstrates the same implementation. The only three product capabilities are visual evidence extraction, deterministic repository grounding, and validated issue compilation.
+## What is checked
+- Deterministic source patterns for potential injection boundaries, shell execution, disabled TLS checks, broad CORS, embedded credentials, UI clipping/fixed widths, missing image alt text, hidden focus indicators, unstable list keys, swallowed exceptions and skipped tests.
+- Optional Gemma review of selected source excerpts for functionality, security, UI, accessibility, testing and maintainability concerns.
+- Optional OSV advisory/version matches for up to 200 exact npm dependencies from package-lock.json v2/v3.
+- Optional Gemma screenshot observations, kept separate from reporter statements and source hypotheses.
+- File/line/exact-quote validation for model-generated source findings.
 
-Gemma observations remain fallible. Validation enforces structure and provenance and rejects common unsupported inferences; it does not prove visual truth. No quality-improvement or root-cause accuracy claim has been measured.
+**This is a bounded static review, not a complete audit.** BugLens does not execute repository code, install its dependencies, run its tests, launch its app, perform penetration testing or measure runtime performance. Every finding needs verification. Zero findings does not mean the repository is correct or secure. The report records checks performed, exclusions, truncation and work not run.
 
-## 2. Live demo and short GIF
+## Inputs and outputs
+Public GitHub repositories only; private repositories and branch selection are not implemented. Supported text attachments include TXT, Markdown, logs, JSON, YAML, XML, CSV/TSV and common source-code formats. Each text input is limited to 20,000 characters; up to three files and 60 KB combined. PDFs, Word documents, archives, audio and video are not parsed: provide relevant text/transcripts or screenshots.
 
-Open the [live BugLens demo](https://buglens-rust.vercel.app). The public production deployment runs on Vercel. To run locally, use `npm run dev` and open [localhost:3000](http://localhost:3000).
+Web screenshots are limited to 4 MB on Vercel (8 MB locally unless configured lower). Output is held in the browser's React memory, with no saved history; download before refreshing.
 
-![Actual synthetic-fixture web journey](docs/demo.gif)
+Outputs:
+- Findings with source evidence, review priority, uncertainty, suggested investigation and verification targets.
+- `buglens-report.md`: scope, supplied problem, findings and limitations.
+- `buglens-remediation.md`: source inventory, problem register and acceptance checklist.
+- `buglens-fix-prompt.txt`: a coding-agent handoff that requires verification before changes and safe regression testing. This is not a shell command or a guaranteed patch.
 
-This GIF shows the implemented fixture journey, not a live model request. [Desktop and mobile captures](docs/screenshots/) and [verification notes](docs/verification.md) document the checks. The website's **Live Gemma 4** option transmits the chosen screenshot and context to Google; **Synthetic fixture mode** uses recorded evidence and is prominently labeled.
-
-## 3. Why this is an agent skill
-
-The [SKILL.md](skills/buglens/SKILL.md) describes invocation boundaries, inputs, exact scripts, evidence rules, failures and an end-to-end example. Its portable scripts and fixtures can run without Next.js. The agent invokes the script, reviews a validated result, and returns an issue draft.
-
-Download `public/buglens-skill.zip` after `npm run skill:package`, extract the `buglens` folder into the agent's skill directory, and install dependencies inside that folder:
-
-```sh
-cd /path/to/installed/buglens
-npm install --ignore-scripts
-node scripts/compile-issue.mjs --sample --markdown
-```
-
-Ask an agent: “Use $buglens to draft an issue from this screenshot, reporter context, and authorized local repository.” The portable `.mjs` files are generated from the same TypeScript core as the website; there is no separate mock implementation.
-
-## 4. Sixty-second reproducible example
-
-With Node 20.18+ installed, from this repository:
+## Local setup
+Node 20.18+ and npm are required.
 
 ```sh
 npm ci
-npm run skill:sample -- --markdown
+cp .env.example .env.local
 npm run dev
 ```
 
-The CLI example needs no API key. In the website choose **Try the sample bug**, then **Generate issue draft**. Inspect provenance and download the Markdown. The sample uses the real scanner and compiler with explicitly recorded model evidence.
+Set `GEMINI_API_KEY` only in the server environment for live AI. The only permitted model is `gemma-4-26b-a4b-it`; there is no Gemini, alternative-model or synthetic fallback after an AI failure. Static repository review works without a model key. The old explicit synthetic screenshot sample is available through **Try the sample bug**, separately from real repository reviews.
 
-For a live run, set `GEMINI_API_KEY` in your environment and supply actual input paths:
+## Reusable agent skill
+Download/extract the skill ZIP. From that directory:
 
 ```sh
-node --import tsx skills/buglens/scripts/compile-issue.ts \
-  --image /absolute/screenshot.png \
-  --context /absolute/reporter.json \
-  --repo /absolute/repository --markdown
+npm install --ignore-scripts
+node scripts/review-repository.mjs --github https://github.com/owner/repo --artifact report
+node scripts/review-repository.mjs --github https://github.com/owner/repo --text "Describe the problem" --artifact prompt
 ```
 
-Use [examples/reporter.json](skills/buglens/examples/reporter.json) for the context shape. The local CLI reads an authorized local repository. The hosted demo always inspects the bundled synthetic repository, including for custom image uploads.
+For authorized external analysis, add `--ai --dependencies --allow-external`; configure the key in the environment. Optional screenshot flags: `--image /absolute/screenshot.png --context /absolute/reporter.json --allow-external`. Reporter JSON has `expectedBehavior`, `actualBehavior` and optional `environment`. See [SKILL.md](skills/buglens/SKILL.md) for the separate original local screenshot workflow.
 
-## 5. Architecture
+In this source checkout use `npm run skill:review -- --github https://github.com/owner/repo`. Rebuild standalone scripts and ZIPs with `npm run skill:package`.
 
-```mermaid
-flowchart LR
-  A[Image + reporter context] --> B[Gemma 4 extraction]
-  B --> C[Schema + provenance guards]
-  C --> D[Local repository inspection]
-  D --> E[Path + symbol + hash checks]
-  E --> F[Deterministic issue compiler]
-  F --> G[Final validation and draft]
-```
+## Architecture and privacy
+The Next.js Node API and CLI share `src/lib/review`. GitHub archives are downloaded from fixed GitHub hosts, pinned to a commit, read in memory and never extracted/executed. Unsafe paths, symlinks, build/dependency folders and sensitive-looking files are excluded.
 
-See [architecture and trust boundaries](docs/architecture.md). The image is placed before reporter text in the multimodal request. Repository contents are never sent to Gemma. Next.js streams actual stage transitions as NDJSON; React retains the result only in tab memory.
+Limits: 20 MB compressed / 64 MB expanded archive, 1,000 supported files, 8 MB source total, 256 KB per source file (2 MB for package-lock.json). Gemma receives at most 16 source excerpts / 45,000 source characters plus supplied problem text. Common credential patterns are redacted, but this is not exhaustive. Never submit secrets.
 
-## 6. Evidence model
+External transfers:
+- GitHub receives the public repository request.
+- Google receives selected source excerpts, supplied text attachments/context, and screenshots when those AI options are enabled.
+- OSV receives dependency names and versions when advisory checking is enabled.
 
-| Class | What it means | Example |
-| --- | --- | --- |
-| Visual | Model observation of visible appearance | The right action is cut off at the image edge. |
-| Reporter | Exact user-supplied text | The reporter states a 390 × 844 viewport. |
-| Repository | Deterministically verified file or declaration | The CheckoutActions declaration exists at a checked path. |
-| Hypothesis | Possible relevance or explanation, not established | The action layout may relate to the symptom. |
-| Unknown | Missing or unresolved information | Browser, OS, zoom, or causal relationship. |
+No database, automatic repository modification, issue creation, push or deployment is performed by the review tool. Reports are not intentionally persisted by BugLens; provider and hosting handling is governed by their services. See [architecture](docs/architecture.md).
 
-The model cannot emit repository or hypothesis items. Reporter quotations must occur exactly in the supplied fields. The application retains all original reporter fields. Visual items and their summary are checked for common implementation, environment and causal language. File identity and declarations are checked independently; causal relevance stays hypothetical.
-
-Confidence is a qualitative label, not a calibrated probability.
-
-## 7. Feature-to-file map
-
-| Capability | Main implementation | Verification |
-| --- | --- | --- |
-| Visual evidence extraction | `src/lib/gemma/live-provider.ts`, `prompt.ts`, `src/model/gemma-client.ts` | `tests/gemma-client.test.ts`, `tests/unit/evidence.test.ts` |
-| Image and model contracts | `src/lib/image.ts`, `src/lib/schema/`, `validate-evidence.ts` | `tests/contract/pipeline.test.ts` |
-| Repository grounding | `src/lib/repository/scan.ts`, `rank.ts`, `validate-paths.ts` | `tests/unit/repository.test.ts` |
-| Issue compilation and validation | `src/lib/issue/compile.ts`, `validate.ts` | `tests/contract/pipeline.test.ts` |
-| Shared orchestration | `src/lib/run.ts` | Pipeline and API contract tests |
-| Reusable skill | `skills/buglens/SKILL.md`, `scripts/*.ts`, generated `*.mjs` | Portable installation smoke check |
-| Website flow | `src/app/`, `src/components/` | `tests/e2e/sample-journey.spec.ts` |
-| Deterministic examples | `fixtures/`, `evals/` | `npm run evals` |
-
-Ranking uses six points per filename term, two per content term and one for package metadata; ties sort by path. The scanner retains up to eight matches plus package metadata. It scans at most 2,000 files, 256 KB each, and 4 MB aggregate source; scan truncation is disclosed. `rg` enumeration is optional and has a Node fallback.
-
-## 8. Tests and evaluations
-
+## Verification
 ```sh
 npm test
 npm run typecheck
 npm run evals
-npx playwright install chromium
 npm run build
 npm run test:e2e
 npm run check:secrets
 ```
 
-Unit and contract tests cover malformed output, fabricated paths, source changes, hypothesis leakage, exact reporter provenance, unknown preservation, invalid/oversize images, strict fixture identity, repository traversal, symlinks, missing sections, request origin, live consent and failed-live-request behavior.
+The repository UI test uses a controlled response generated by the real static pipeline; live integration results are recorded separately. See [verification](docs/verification.md) and [demo instructions](docs/submission.md). Tests and a handful of live demonstrations do not establish general model accuracy or complete security coverage.
 
-The one core Playwright journey runs at desktop and 360 px mobile sizes. It verifies keyboard submission, fixture labels, validation status, issue content, Markdown download, no page overflow and memory-only report lifecycle.
+## Deployment
+The existing app is deployed to Vercel via CLI. Configure server-only `GEMINI_API_KEY`, `GEMMA_MODEL=gemma-4-26b-a4b-it`, `MAX_UPLOAD_MB=4` and optional `DEMO_MODE=fixture` for the explicit sample page. The repository-review route never uses fixture mode. GitHub-to-Vercel automatic deployment requires repository authorization and is not currently connected.
 
-Both browser projects also passed against the public Vercel deployment. Recheck a hosted deployment with `BUGLENS_BASE_URL=https://buglens-rust.vercel.app npm run test:e2e`.
-
-[Evaluation cases](evals/cases.json) include clear clipping, ambiguous spacing, an unrelated image and a blurred image. Each has a screenshot, reporter context, required properties and forbidden properties. `npm run evals` checks the deterministic fixture pipeline; it is **not** a live model benchmark. [Latest fixture results](evals/latest-results.json) are generated by the runner.
-
-`npm run kill-test` performs live visual extraction using the configured key. An early JSON-schema-heavy prompt produced malformed output; the simpler instance-oriented prompt and a more clearly clipped synthetic screenshot produced valid visual evidence. The less obvious original crop was classified as insufficient. These observations are recorded honestly, not presented as general model accuracy.
-
-## 9. Setup
-
-Use Node 20.18+ and npm. Source-checkout development dependencies include TypeScript, Vitest, Playwright, tsx and esbuild. Application dependencies are Next.js App Router, React, Tailwind, Zod, Sharp and `@google/genai`.
-
-```sh
-npm ci
-cp .env.example .env.local
-# Set a key directly in .env.local using your editor, if you need live mode.
-npm run skill:package
-npm run dev
-```
-
-Do not overwrite an existing `.env.local`. Rebuild portable scripts and archives with `npm run skill:package` after changing core code. Regenerate synthetic screenshots only when needed with `npm run fixtures:images`. Browser automation is used for development tests and fixture capture, not as a product capability.
-
-For production on a Node host such as DigitalOcean App Platform:
-
-```sh
-npm ci
-npm run skill:package
-npm run build
-npm run start
-```
-
-Supply environment secrets through the hosting platform. `npm run start` binds to `0.0.0.0`; Next.js honors `PORT`. The Dockerfile is an additional deployment recipe. Docker execution has not been verified here; the ordinary Node production build/server is the verified path. Build-time archive packaging uses the `zip` and `unzip` utilities.
-
-Vercel deployment uses `vercel.json`, the Node.js route runtime, and explicitly bundled fixture files. On Vercel, both the server and upload UI cap images at 4 MB to leave multipart overhead below the platform's 4.5 MB request limit. Other Node hosts retain the configurable 8 MB maximum. Prebuilt source and skill ZIPs are included so hosted downloads do not need build-time `zip` utilities. Configure `GEMINI_API_KEY` as a server-only secret, `GEMMA_MODEL=gemma-4-26b-a4b-it`, `DEMO_MODE=fixture` and `MAX_UPLOAD_MB=4` for Vercel.
-
-The current site was deployed directly with the Vercel CLI. Automatic deployment on GitHub pushes is not connected: the Vercel account still needs repository permission. Until that is authorized, redeploy from this checkout with `npx vercel deploy --prod --scope wewin3` after building and checking changes.
-
-## 10. Environment variables
-
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `GEMINI_API_KEY` | empty | Server-side Google API credential; required only for live mode. |
-| `GEMMA_MODEL` | `gemma-4-26b-a4b-it` | Exact pinned model. Any other value fails. |
-| `DEMO_MODE` | `fixture` | Initial mode for the website's sample journey; users explicitly choose live. |
-| `MAX_UPLOAD_MB` | `8` locally, `4` on Vercel | Application upload limit; configurable downward. Vercel always caps at 4 MB. |
-
-Never expose the key through `NEXT_PUBLIC_`. The Gemini API is the service, while **Gemma 4** is the selected model. No Gemini-family or alternate-model fallback exists. A successful response must not report a different model identifier; an omitted identifier remains unknown.
-
-## 11. Implemented versus fixture-backed versus future
-
-| Status | Scope |
-| --- | --- |
-| Implemented | Installable skill, Gemma 4 multimodal adapter, strict contracts, image validation, local scanner, path/symbol/hash verification, provenance guards, compiler, fixed sections, typed failures, CLI, website, accessibility states and tests. |
-| Synthetic fixture | Checkout repository, four screenshot cases, recorded fixture analyses and expected outputs. Both modes use real local scanning and compilation. |
-| Not implemented | Issue publishing, automatic fixes, authentication, accounts, history, arbitrary remote cloning, analytics or semantic search. |
-| Future work | No additional feature scope is promised. Better evaluation coverage can replace weak existing checks. |
-
-Fixture mode accepts only the exact selected image and its original reporter context. A user upload or edited report requires live mode. A failed live request returns an error, never recorded sample output.
-
-## 12. Privacy and security
-
-Do not upload secrets, access tokens, customer data, confidential interfaces or identifiable people. Live images and context are processed by Google's Gemini API under its provider terms. Do not claim local/private inference.
-
-Uploaded images are decoded in memory and metadata is stripped. No upload files, model histories or database records are created. The browser uses no localStorage/sessionStorage for reports. The CLI reads user files without deleting or modifying them. Checked-in screenshots and model evaluation examples are synthetic artifacts, not user uploads.
-
-The web scanner has a fixed repository root. Paths are normalized and verified, symlinks and parent traversal rejected, hidden/secret/config/dependency/build files excluded, and content hashes rechecked before compilation. The source/skill packager uses an explicit exclusion policy and checks for the configured credential. The local `.env.local` is ignored and is never in the archives.
-
-Source text, reporter statements and images are untrusted data. No repository scripts are executed, no GitHub integration exists, and no issue is automatically published. The hosted prototype has no application-level quotas; configure hosting/provider limits before broad public exposure.
-
-## 13. Limitations
-
-- File matching is lexical and bounded. A matching file is not a confirmed cause.
-- Symbol verification recognizes simple declaration syntax; it is not full static analysis.
-- Reproduction routes are inferred only from an explicitly recognized source route map; unrecognized routing remains unknown.
-- Natural-language guards are conservative. They can reject valid observations or miss unsupported paraphrases. Human review is required.
-- Low-information images may fail honestly. Subtle symptoms are harder than the obvious synthetic example.
-- Reproduction steps and proposed verification tests are not run by BugLens.
-- The demo scans a synthetic repository even for uploaded screenshots. Use the local skill for a real authorized checkout.
-- The model can fail due to access, quota or availability. One malformed-output retry is allowed, with no provider fallback.
-- The result disappears on refresh. Provider-side processing/retention is outside BugLens's application storage behavior.
-- Four synthetic cases do not establish statistically meaningful quality or user impact.
-
-## 14. License
-
-[Apache License 2.0](LICENSE). Dependencies retain their own licenses. Gemma is accessed through Google's hosted API; the source license does not grant API access or override provider terms.
-
-[Gemma through the Gemini API documentation](https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api) · [Submission notes](docs/submission.md)
+## License
+Apache 2.0. See [LICENSE](LICENSE).

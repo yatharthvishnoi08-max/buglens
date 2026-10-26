@@ -1,0 +1,10 @@
+import { afterEach, expect, it, vi } from "vitest";
+import { POST } from "../../src/app/api/review-repository/route";
+import * as runner from "../../src/lib/review/run";
+const options = { repositoryUrl: "https://github.com/example/app", mode: "repository", includeAI: false, checkDependencies: false, consent: false };
+function request(update = {}, fields: Record<string, string> = {}, headers = {}) { const form = new FormData(); form.set("options", JSON.stringify({ ...options, ...update })); for (const [key, value] of Object.entries(fields)) form.set(key, value); return new Request("http://localhost/api/review-repository", { method: "POST", body: form, headers }); }
+afterEach(() => vi.restoreAllMocks());
+it("requires consent for external analysis", async () => { const response = await POST(request({ includeAI: true })); expect(response.status).toBe(400); expect((await response.json()).error.code).toBe("REPORTER_CONTEXT_REQUIRED"); });
+it("rejects remote origins and caller paths", async () => { expect((await POST(request({}, {}, { origin: "https://evil.example" }))).status).toBe(403); expect((await POST(request({}, { repo: "/private" }))).status).toBe(400); });
+it("rejects malformed, duplicate and non-image upload fields", async () => { expect((await POST(request({}, { image: "a string" }))).status).toBe(400); const form = new FormData(); form.append("options", JSON.stringify(options)); form.append("options", JSON.stringify(options)); expect((await POST(new Request("http://localhost/api/review-repository", { method: "POST", body: form }))).status).toBe(400); });
+it("streams a failed review as an error without a fabricated result", async () => { vi.spyOn(runner, "runRepositoryReview").mockRejectedValue(new Error("private internal message")); const response = await POST(request()); const output = await response.text(); expect(output).toContain('"type":"error"'); expect(output).not.toContain('"type":"result"'); expect(output).not.toContain("private internal message"); expect(response.headers.get("cache-control")).toBe("no-store"); });

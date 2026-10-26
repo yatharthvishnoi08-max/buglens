@@ -35,6 +35,6 @@ test("sample screenshot to validated Markdown, keyboard and mobile", async ({ pa
   const download = await downloadEvent; expect(download.suggestedFilename()).toBe("buglens-issue.md");
   const file = await download.path(); expect(await readFile(file!, "utf8")).toContain("SYNTHETIC FIXTURE MODE");
   expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
-  await page.reload(); await expect(page.getByRole("heading", { name: "Start with a screenshot." })).toBeVisible();
+  await page.reload(); await expect(page.getByRole("heading", { name: "Start with your repository." })).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -7,11 +7,11 @@ import { sourceFiles, assertNoKey } from "./source-files";
 const root = process.cwd();
 await mkdir("public", { recursive: true }); await mkdir("work", { recursive: true });
 await import("./export-schemas");
-for (const name of ["analyze-visual", "scan-repository", "validate-evidence", "compile-issue"]) await build({ entryPoints: [`skills/buglens/scripts/${name}.ts`], outfile: `skills/buglens/scripts/${name}.mjs`, bundle: true, platform: "node", format: "esm", target: "node20", packages: "external", logLevel: "warning" });
+for (const name of ["analyze-visual", "scan-repository", "validate-evidence", "compile-issue", "review-repository"]) await build({ entryPoints: [`skills/buglens/scripts/${name}.ts`], outfile: `skills/buglens/scripts/${name}.mjs`, bundle: true, platform: "node", format: "esm", target: "node20", packages: "external", logLevel: "warning" });
 await cp("fixtures", "skills/buglens/fixtures", { recursive: true });
 await copyFile("LICENSE", "skills/buglens/LICENSE");
 const pkg = JSON.parse(await readFile("package.json", "utf8"));
-await writeFile("skills/buglens/package.json", JSON.stringify({ name: "buglens-agent-skill", version: pkg.version, private: true, type: "module", license: "Apache-2.0", engines: { node: ">=20.18.0" }, dependencies: Object.fromEntries(["@google/genai", "zod", "sharp"].map((name) => [name, pkg.dependencies[name]])) }, null, 2) + "\n");
+await writeFile("skills/buglens/package.json", JSON.stringify({ name: "buglens-agent-skill", version: pkg.version, private: true, type: "module", license: "Apache-2.0", engines: { node: ">=20.18.0" }, dependencies: Object.fromEntries(["@google/genai", "zod", "sharp", "tar-stream"].map((name) => [name, pkg.dependencies[name]])) }, null, 2) + "\n");
 const staging = await mkdtemp(path.join(root, "work", "package-"));
 const files = await sourceFiles(); await assertNoKey(files);
 for (const file of files) { const dest = path.join(staging, "buglens-source", file); await mkdir(path.dirname(dest), { recursive: true }); await copyFile(file, dest); }

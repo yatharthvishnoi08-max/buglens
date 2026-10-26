@@ -20,6 +20,7 @@
     "smoke:gemma": "node --env-file=.env.local --import tsx scripts/smoke-test.ts",
     "fixtures:images": "node --import tsx scripts/render-fixtures.ts",
     "skill:sample": "node --import tsx skills/buglens/scripts/compile-issue.ts --sample",
+    "skill:review": "node --import tsx skills/buglens/scripts/review-repository.ts",
     "skill:package": "node --import tsx scripts/package-skill.ts",
     "schemas": "node --import tsx scripts/export-schemas.ts",
     "check:secrets": "node --import tsx scripts/check-secrets.ts"
@@ -29,6 +30,7 @@
     "@types/node": "^20.17.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@types/tar-stream": "^3.1.4",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
@@ -42,6 +44,7 @@
     "react-dom": "^19.3.1",
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
+    "tar-stream": "^3.2.2",
     "zod": "^4.6.7"
   }
 }

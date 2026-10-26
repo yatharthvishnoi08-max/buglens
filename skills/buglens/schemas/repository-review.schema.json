@@ -1,0 +1,482 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "const": "repository-review"
+    },
+    "repository": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner",
+        "name",
+        "url",
+        "commit",
+        "branch"
+      ],
+      "additionalProperties": false
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "repository",
+        "problem"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "reportedProblem": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "default": "",
+          "type": "string",
+          "maxLength": 20000
+        },
+        "attachments": {
+          "default": [],
+          "maxItems": 3,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 20000
+              }
+            },
+            "required": [
+              "name",
+              "text"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "text",
+        "attachments"
+      ],
+      "additionalProperties": false
+    },
+    "findings": {
+      "maxItems": 100,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "security",
+              "functionality",
+              "ui",
+              "accessibility",
+              "testing",
+              "maintainability"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "static-rule",
+              "gemma",
+              "osv"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "evidence": {
+            "type": "string",
+            "maxLength": 900
+          },
+          "explanation": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "recommendation": {
+            "type": "string",
+            "maxLength": 1600
+          },
+          "verification": {
+            "type": "string",
+            "maxLength": 1200
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "const": "needs-verification"
+          },
+          "fixPrompt": {
+            "type": "string"
+          },
+          "focus": {
+            "default": "repository-review",
+            "type": "string",
+            "enum": [
+              "reported-problem",
+              "repository-review"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "category",
+          "severity",
+          "source",
+          "path",
+          "line",
+          "evidence",
+          "explanation",
+          "recommendation",
+          "verification",
+          "confidence",
+          "status",
+          "fixPrompt",
+          "focus"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "totalFiles": {
+          "type": "number"
+        },
+        "eligibleFiles": {
+          "type": "number"
+        },
+        "scannedFiles": {
+          "type": "number"
+        },
+        "skippedFiles": {
+          "type": "number"
+        },
+        "bytes": {
+          "type": "number"
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "aiFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependencyPackages": {
+          "type": "number"
+        },
+        "dependencyStatus": {
+          "type": "string",
+          "enum": [
+            "checked",
+            "not-requested",
+            "no-supported-lockfile",
+            "unavailable"
+          ]
+        }
+      },
+      "required": [
+        "totalFiles",
+        "eligibleFiles",
+        "scannedFiles",
+        "skippedFiles",
+        "bytes",
+        "truncated",
+        "aiFiles",
+        "dependencyPackages",
+        "dependencyStatus"
+      ],
+      "additionalProperties": false
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "reviewed",
+              "limited",
+              "not-run"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "status",
+          "detail"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "visualAnalysis": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "sufficient",
+                "insufficient"
+              ]
+            },
+            "summary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            },
+            "evidence": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_-]{0,59}$"
+                  },
+                  "claim": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "visual",
+                      "reporter",
+                      "unknown"
+                    ]
+                  },
+                  "evidence": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "claim",
+                  "source",
+                  "evidence",
+                  "confidence"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "unknowns": {
+              "minItems": 1,
+              "maxItems": 12,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            },
+            "forbiddenInferences": {
+              "maxItems": 12,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            }
+          },
+          "required": [
+            "status",
+            "summary",
+            "evidence",
+            "unknowns",
+            "forbiddenInferences"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "screenshotMatches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "gemma",
+            "static"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "returnedModel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "returnedModel"
+      ],
+      "additionalProperties": false
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reportMarkdown": {
+      "type": "string"
+    },
+    "documentationMarkdown": {
+      "type": "string"
+    },
+    "fixPrompt": {
+      "type": "string"
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "const": true
+        },
+        "runtimeVerified": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "valid",
+        "runtimeVerified"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "kind",
+    "repository",
+    "mode",
+    "createdAt",
+    "summary",
+    "reportedProblem",
+    "findings",
+    "coverage",
+    "checks",
+    "visualAnalysis",
+    "screenshotMatches",
+    "metadata",
+    "warnings",
+    "reportMarkdown",
+    "documentationMarkdown",
+    "fixPrompt",
+    "validation"
+  ],
+  "additionalProperties": false
+}
