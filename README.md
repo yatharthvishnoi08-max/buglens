@@ -1,105 +1,85 @@
 # BugLens
-### From “something is broken” to a source-linked fix plan.
 
-**A repository-first code-review workspace and reusable Gemma 4 agent skill.** Add a public GitHub repository, describe a problem or attach supported evidence, and get a review report, remediation documentation and prompts an authorized coding agent can use to investigate the fix.
+**Turn a bug report into a source-linked fix plan.**
 
-[Try the live app](https://buglens-rust.vercel.app/demo) · [90-second demo](docs/DEMO_GUIDE.md) · [Verification report](docs/TEST_REPORT.md) · [Submission PDF](submission/Project_Submission_Report.pdf) · [Documentation](docs/INDEX.md)
+BugLens helps developers investigate a public GitHub repository using source code, problem descriptions, logs and optional screenshots. It produces evidence-linked findings, a full review report, remediation documentation and prompts for an authorized coding agent to investigate the fix.
 
-## The problem we address
+[**Try BugLens**](https://buglens-rust.vercel.app/demo) · [90-second demo](docs/DEMO_GUIDE.md) · [Test evidence](docs/TEST_REPORT.md) · [Download the complete documentation](submission/Complete_Documentation_Package.zip)
 
-A screenshot shows a symptom, a log shows an error, and a repository contains possible causes. Developers still need to connect them before they can make a safe change. BugLens brings those inputs into one review workflow and produces an evidence-linked handoff—not an unsupported “your code is fixed” claim.
+## The problem
 
-## Three things you can do
+A screenshot shows a symptom. A stack trace shows a failure. A repository contains possible causes. Connecting them—and explaining what should be verified before changing code—is still work.
 
-1. **Review a repository.** Inspect a commit-pinned public GitHub snapshot with deterministic checks, optional Gemma 4 source review and optional npm dependency advisories.
-2. **Investigate a reported problem.** Add text, logs, code attachments or a screenshot with expected/actual behavior. Keep reported symptoms separate from verified source evidence and hypotheses.
-3. **Move from findings to action.** Download a full report, remediation documentation and combined or per-finding fix prompts, with explicit verification targets and coverage limits.
+BugLens brings that context into one repository-first workflow:
 
-## Why this implementation is worth inspecting
+1. **Review the code.** Inspect a commit-pinned repository with deterministic source checks, optional Gemma 4 review and optional npm dependency advisories.
+2. **Investigate the reported problem.** Supply text, logs, code attachments or a screenshot with expected and actual behavior.
+3. **Leave with an actionable handoff.** Review source references and coverage, then download documentation and verification-first fix prompts.
 
-| Engineering choice | Why it matters | Inspect the implementation |
-| --- | --- | --- |
-| **Source references are validated, not merely displayed** | A model finding must cite a supplied file, line and exact quote; invalid references are rejected | [Source-review validator](src/lib/review/model.ts) |
-| **Evidence has provenance** | Screenshot observations, reporter statements and suspected causes are kept separate | [Evidence schemas](src/lib/schema/evidence.ts), [report compiler](src/lib/review/report.ts) |
-| **Gemma 4 only, with explicit failures** | The adapter rejects other models; a requested AI failure is not hidden behind a different model or synthetic result | [Model adapter](src/model/gemma-client.ts), [adapter tests](tests/gemma-client.test.ts) |
-| **A website and a reusable agent skill share one pipeline** | The review workflow is usable from a browser or an authorized agent/CLI environment | [Shared pipeline](src/lib/review/run.ts), [skill](skills/buglens/SKILL.md) |
-| **Read-only, bounded repository inspection** | Commit pinning, fixed GitHub hosts and path/size boundaries; imported code is not executed | [GitHub importer](src/lib/review/github.ts), [importer tests](tests/unit/review.test.ts) |
-| **The report states what was not checked** | Coverage gaps, incomplete checks and unverified runtime behavior remain visible | [Result schema](src/lib/review/schema.ts), [coverage/report generation](src/lib/review/run.ts) |
+**The boundary matters:** BugLens generates investigation leads, not guaranteed fixes. It does not execute or modify the repository.
 
-These are inspectable design decisions, not claims that no other tool has them.
+## Try it in 90 seconds
 
-## Verification at a glance
+1. Open the [workspace](https://buglens-rust.vercel.app/demo) and choose **Use BugLens’s own repository**, or enter a public GitHub repository.
+2. Select **Repository-wide review**. For a no-model-key demonstration, turn off **Gemma 4 source review** and **Known dependency vulnerabilities**, and leave screenshots off.
+3. Run the review. Inspect a finding, its source evidence and **What was actually checked**.
+4. Open **Full report**, **Documentation** and **Fix prompt**. Download an artifact before refreshing.
+
+Static review still requires GitHub connectivity. For a clearly labeled offline synthetic walkthrough, choose **Try the sample bug** with fixture mode enabled. The [demo guide](docs/DEMO_GUIDE.md) includes a failure case, reset steps and honest fallback options.
+
+![BugLens redesigned landing page, with an explicitly labeled synthetic example](docs/assets/ui/landing-1440.png)
+
+*Preview of the local `ui-antigravity` redesign. The published app remains the prior release; documentation updates do not deploy the UI.*
+
+## What you receive
+
+| Artifact | Contents |
+| --- | --- |
+| `buglens-report.md` | Supplied problem, source-linked findings, inspection scope and limitations |
+| `buglens-remediation.md` | Source inventory, problem register, verification targets and acceptance checklist |
+| `buglens-fix-prompt.txt` | A combined investigation prompt for a coding agent; individual findings also have their own prompts |
+
+A fix prompt is **not a terminal command or an automatic patch**. It asks the agent to inspect repository instructions, verify the issue, preserve unrelated work, make a focused change and report real test results.
+
+## Evidence before explanation
+
+Four implementation choices make the output inspectable:
+
+- **Grounded source references.** Model findings must cite a supplied file, line and exact quote. Invalid references are rejected. [Validation code](src/lib/review/model.ts).
+- **Separated evidence.** Screenshot observations, reporter statements and suspected causes remain distinct. A source match is not automatically the cause of a reported symptom. [Evidence schema](src/lib/schema/evidence.ts).
+- **Gemma 4 only.** The adapter permits `gemma-4-26b-a4b-it` and rejects a different returned model identifier when supplied. Requested AI failures are explicit; no alternate model or hidden fixture replaces the result. [Model adapter](src/model/gemma-client.ts).
+- **One pipeline, two entry points.** The website and reusable agent skill share the review implementation, artifact compiler and boundaries. [Pipeline](src/lib/review/run.ts) · [Skill](skills/buglens/SKILL.md).
+
+The Node API loads a bounded GitHub archive pinned to a commit, runs static checks, performs requested external checks, validates evidence and compiles the artifacts. There is no database, login, durable job queue or automatic repair service.
+
+[Architecture](docs/architecture.md) · [Processing flowcharts](docs/FLOWCHARTS.md) · [API contract](docs/API_REFERENCE.md)
+
+## Implemented features and verification
+
+| Feature | Status | Source | Evidence |
+| --- | --- | --- | --- |
+| Public repository import and static review | Implemented | [Importer](src/lib/review/github.ts), [checks](src/lib/review/checks.ts) | Unit/contracts and recorded historical live integration |
+| Problem text, supported files and artifact downloads | Implemented | [Inputs](src/lib/review/inputs.ts), [compiler](src/lib/review/report.ts) | Desktop/mobile controlled-response browser journeys |
+| Gemma source and screenshot review | Implemented | [Source review](src/lib/review/model.ts), [adapter](src/model/gemma-client.ts) | Reference/adapter tests; newer source-review live success remains unverified |
+| Dependency security review | Partial | [OSV client](src/lib/review/checks.ts) | Exact npm versions only; tests and historical integration |
+| Offline screenshot example | Mocked | [Fixtures](fixtures), [sample test](tests/e2e/sample-journey.spec.ts) | Explicit synthetic pipeline, not live model inference |
+| Exhaustive runtime/security audit | Proposed | [Scope](docs/architecture.md) | Not implemented; imported code is never executed |
+
+“Implemented” means the feature exists in source; it does not imply every live integration was successfully verified.
+
+### Recorded checks
 
 **94 unit/contract tests passed · 4 synthetic evaluation cases passed · Production build passed · 5 browser tests passed**
 
-Browser tests cover desktop/mobile input-to-artifact journeys; a separate matrix checks 375, 768, 1024 and 1440px layouts and error/partial states. One duplicate matrix invocation is intentionally skipped. Results are local checks of the current UI working tree—not hosted CI badges or a measured model-accuracy score. Repository browser responses are controlled fixtures from the real static pipeline.
+The recorded local run on 26 October 2026 tested base `7d1847f` plus the uncommitted UI redesign. Browser checks covered desktop/mobile journeys and a 375/768/1024/1440px layout matrix; one duplicate matrix invocation was intentionally skipped. Controlled repository responses exercise the real static pipeline on test data, not live provider availability.
 
-**Important gap:** the newer live Gemma source-review path has not yet produced a verified successful live result in the recorded checks. Prior screenshot-only model success does not prove this path. [Full evidence and limitations](docs/TEST_REPORT.md).
+**Open evidence gap:** the newer live Gemma source-review path has no verified successful live result in the recorded checks. Earlier screenshot-only success does not establish source-review success. These checks are not a model-accuracy benchmark, complete security audit or scalability measurement.
 
-![Actual redesigned local BugLens interface; its preview is explicitly synthetic](docs/assets/ui/landing-1440.png)
+[Commands, outcomes, screenshots and limitations](docs/TEST_REPORT.md)
 
-*Release note: this screenshot shows the local, uncommitted `ui-antigravity` redesign. The live app remains the prior release; publishing this README does not deploy the UI.*
+## Run locally
 
-## Complete technical documentation
-
-[Download all reports and diagrams in one ZIP](submission/Complete_Documentation_Package.zip) · [Start here](submission/START_HERE.md)
-
-| Read this | To understand |
-| --- | --- |
-| [Architecture](docs/architecture.md) | Actual runtime components and integrations |
-| [Flowcharts](docs/FLOWCHARTS.md) | User journey, processing, errors and partial results |
-| [Test report](docs/TEST_REPORT.md) | Observed passes, failures, fixtures and unverified checks |
-| [Scalability report](docs/SCALABILITY_REPORT.md) | Current limits, bottlenecks, proposed growth and load-test plan |
-| [API reference](docs/API_REFERENCE.md) | Multipart inputs and streaming output contract |
-| [Security and privacy](docs/SECURITY_AND_PRIVACY.md) | Safeguards, data transfers and remaining risks |
-| [Operations runbook](docs/OPERATIONS_RUNBOOK.md) | Release checks, failure triage and recovery planning |
-
-Scalability targets and proposed infrastructure are not completed work. No measured throughput claim is implied.
-
-## Feature status
-
-| Feature | Status | Source path | Verification evidence |
-| --- | --- | --- | --- |
-| Public repository import and bounded source checks | Implemented | [Importer](src/lib/review/github.ts), [checks](src/lib/review/checks.ts) | Unit/contracts; recorded historical live integration |
-| Text/file problem input and three artifact downloads | Implemented | [Inputs](src/lib/review/inputs.ts), [compiler](src/lib/review/report.ts) | Desktop/mobile controlled-response browser tests |
-| Gemma source and screenshot analysis | Implemented | [Source review](src/lib/review/model.ts), [adapter](src/model/gemma-client.ts) | Reference/adapter tests; fresh source-review live success unverified |
-| Dependency security review | Partial | [OSV client](src/lib/review/checks.ts) | Exact npm versions only; contracts and historical integration |
-| Exhaustive runtime/security audit | Proposed | [Scope](docs/architecture.md) | Not implemented; imported code is never executed |
-| Explicit offline screenshot demo | Mocked | [Fixtures](fixtures), [sample test](tests/e2e/sample-journey.spec.ts) | Synthetic pipeline, not live model evidence |
-
-“Implemented” describes code availability, not successful live verification.
-
-## Workflow
-1. Add an HTTPS GitHub repository URL. BugLens resolves the default branch to a fixed commit.
-2. Choose **Repository-wide review** or **Investigate a reported problem**.
-3. Optionally paste a description, error, stack trace, logs or code. Attach up to three supported UTF-8 text/code files or an optional PNG/JPEG/WebP screenshot with expected/actual behavior.
-4. Select Gemma 4 source review and/or npm dependency advisory checks. Read and accept the external processing notice when enabled.
-5. Inspect findings and coverage, then copy/download the report, documentation or fix prompt. Each finding also has its own prompt.
-
-A reported problem drives source selection and the combined fix prompt. General repository findings remain separately labeled; they are not automatically presented as causes of that problem.
-
-## What is checked
-- Deterministic source patterns for potential injection boundaries, shell execution, disabled TLS checks, broad CORS, embedded credentials, UI clipping/fixed widths, missing image alt text, hidden focus indicators, unstable list keys, swallowed exceptions and skipped tests.
-- Optional Gemma review of selected source excerpts for functionality, security, UI, accessibility, testing and maintainability concerns.
-- Optional OSV advisory/version matches for up to 200 exact npm dependencies from package-lock.json v2/v3.
-- Optional Gemma screenshot observations, kept separate from reporter statements and source hypotheses.
-- File/line/exact-quote validation for model-generated source findings.
-
-**This is a bounded static review, not a complete audit.** BugLens does not execute repository code, install its dependencies, run its tests, launch its app, perform penetration testing or measure runtime performance. Every finding needs verification. Zero findings does not mean the repository is correct or secure. The report records checks performed, exclusions, truncation and work not run.
-
-## Inputs and outputs
-Public GitHub repositories only; private repositories and branch selection are not implemented. Supported text attachments include TXT, Markdown, logs, JSON, YAML, XML, CSV/TSV and common source-code formats. Each text input is limited to 20,000 characters; up to three files and 60 KB combined. PDFs, Word documents, archives, audio and video are not parsed: provide relevant text/transcripts or screenshots.
-
-Web screenshots are limited to 4 MB on Vercel (8 MB locally unless configured lower). Output is held in the browser's React memory, with no saved history; download before refreshing.
-
-Outputs:
-- Findings with source evidence, review priority, uncertainty, suggested investigation and verification targets.
-- `buglens-report.md`: scope, supplied problem, findings and limitations.
-- `buglens-remediation.md`: source inventory, problem register and acceptance checklist.
-- `buglens-fix-prompt.txt`: a coding-agent handoff that requires verification before changes and safe regression testing. This is not a shell command or a guaranteed patch.
-
-## Local setup
-Node 20.18+ and npm are required.
+Requires Node **20.18+** and npm. From the repository root:
 
 ```sh
 npm ci
@@ -107,62 +87,69 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://127.0.0.1:3000`. These commands match the manifest. Development start, production build/start and browser tests were run in the existing installed checkout; a fresh `npm ci` was not repeated during this documentation pass.
+Open `http://127.0.0.1:3000`. For static-only use, disable source AI, dependency checks and screenshots as described above. The explicit synthetic sample uses `DEMO_MODE=fixture`.
 
-| Variable | Purpose |
+| Environment variable | Purpose |
 | --- | --- |
-| `GEMINI_API_KEY` | Server-only Google credential for live AI |
+| `GEMINI_API_KEY` | Server-only Google credential for live AI; never expose through `NEXT_PUBLIC_` |
 | `GEMMA_MODEL` | Only accepted model: `gemma-4-26b-a4b-it` |
-| `DEMO_MODE` | `fixture` enables the explicit synthetic screenshot sample |
-| `MAX_UPLOAD_MB` | Image limit: example 8 locally; capped at 4 on Vercel |
+| `DEMO_MODE` | `fixture` enables the separate synthetic screenshot demo |
+| `MAX_UPLOAD_MB` | Screenshot ceiling: example 8 locally; capped at 4 when running on Vercel |
 
-Set `GEMINI_API_KEY` only in the server environment for live AI. The only permitted model is `gemma-4-26b-a4b-it`; there is no Gemini, alternative-model or synthetic fallback after an AI failure. Static repository review works without a model key. The old explicit synthetic screenshot sample is available through **Try the sample bug**, separately from real repository reviews.
-
-## Reusable agent skill
-Download/extract the skill ZIP. From that directory:
+Gemini is the API transport; **Gemma 4 is the model**. Real repository review never uses fixture mode.
 
 ```sh
-npm install --ignore-scripts
-node scripts/review-repository.mjs --github https://github.com/owner/repo --artifact report
-node scripts/review-repository.mjs --github https://github.com/owner/repo --text "Describe the problem" --artifact prompt
-```
-
-For authorized external analysis, add `--ai --dependencies --allow-external`; configure the key in the environment. Optional screenshot flags: `--image /absolute/screenshot.png --context /absolute/reporter.json --allow-external`. Reporter JSON has `expectedBehavior`, `actualBehavior` and optional `environment`. See [SKILL.md](skills/buglens/SKILL.md) for the separate original local screenshot workflow.
-
-In this source checkout use `npm run skill:review -- --github https://github.com/owner/repo`. Rebuild standalone scripts and ZIPs with `npm run skill:package`.
-
-## Architecture and privacy
-The Next.js Node API and CLI share `src/lib/review`. GitHub archives are downloaded from fixed GitHub hosts, pinned to a commit, read in memory and never extracted/executed. Unsafe paths, symlinks, build/dependency folders and sensitive-looking files are excluded.
-
-Limits: 20 MB compressed / 64 MB expanded archive, 1,000 supported files, 8 MB source total, 256 KB per source file (2 MB for package-lock.json). Gemma receives at most 16 source excerpts / 45,000 source characters plus supplied problem text. Common credential patterns are redacted, but this is not exhaustive. Never submit secrets.
-
-External transfers:
-- GitHub receives the public repository request.
-- Google receives selected source excerpts, supplied text attachments/context, and screenshots when those AI options are enabled.
-- OSV receives dependency names and versions when advisory checking is enabled.
-
-No database, automatic repository modification, issue creation, push or deployment is performed by the review tool. Reports are not intentionally persisted by BugLens; provider and hosting handling is governed by their services. See [architecture](docs/architecture.md).
-
-## Verification
-```sh
-npm test
 npm run typecheck
+npm test
 npm run evals
 npm run build
 npm run test:e2e
 npm run check:secrets
 ```
 
-The repository UI test uses a controlled response generated by the real static pipeline; live integration results are recorded separately. See [current results](docs/TEST_REPORT.md), [historical verification](docs/verification.md) and [demo instructions](docs/DEMO_GUIDE.md). Tests and a handful of live demonstrations do not establish general model accuracy or complete security coverage. Stop an existing development server before running production browser tests.
+Stop an existing development server before production browser tests. Setup commands match the manifest; build/start and tests were exercised in the installed checkout, but a fresh `npm ci` was not repeated in the documentation pass.
 
-## Deployment
-The existing app is deployed to Vercel via CLI. Configure server-only `GEMINI_API_KEY`, `GEMMA_MODEL=gemma-4-26b-a4b-it`, `MAX_UPLOAD_MB=4` and optional `DEMO_MODE=fixture` for the explicit sample page. The repository-review route never uses fixture mode. GitHub-to-Vercel automatic deployment requires repository authorization and is not currently connected.
+### Use the reusable skill
 
-## Submission readiness and team
+From this source checkout:
 
-Official problem statement and submission requirements were not supplied, so challenge alignment and eligibility cannot yet be assessed. No measured social impact, competitive superiority or guaranteed shortlisting is claimed. The project entry has not been submitted.
+```sh
+npm run skill:review -- --github https://github.com/yatharthvishnoi08-max/buglens --artifact report
+```
 
-Team member names, roles and contributions were not supplied; repository ownership is not evidence of authorship. The submission owner must provide these before submission. See [UI integration handoff](docs/UI_HANDOFF.md).
+The [skill guide](skills/buglens/SKILL.md) covers standalone installation, problem inputs, screenshots and explicit authorization for external checks. Published downloadable distributions predate the pending UI integration.
+
+## Supported scope, privacy and limits
+
+- **Repositories:** public GitHub repositories, default branch only. No private-repository login or branch selection.
+- **Problem inputs:** direct text and up to three supported UTF-8 text/code attachments. Each input is limited to 20,000 characters; combined problem text is limited to 60,000 bytes.
+- **Screenshots:** PNG, JPEG or WebP, up to 4 MiB on Vercel or 8 MiB locally. PDFs, Word, archives, audio and video are not parsed; provide relevant text or screenshots.
+- **Source inspection:** at most 1,000 supported files and 8 MiB total. AI sees at most 16 excerpts / 45,000 source characters. OSV checks up to 200 distinct exact npm versions.
+- **Not performed:** repository installation/execution, runtime tests, browser testing of the target app, penetration testing or performance measurement. Zero findings is not an all-clear.
+- **Data handling:** results stay in browser memory. Download before refresh. GitHub receives repository requests; Google receives selected source/problem or screenshot context when AI is enabled; OSV receives package names/versions when requested.
+- **Secrets:** redaction and sensitive-path filtering are incomplete. Do not submit credentials or sensitive personal data. Provider and hosting handling are separate from BugLens.
+
+[Full security/privacy assessment](docs/SECURITY_AND_PRIVACY.md) · [Exact resource limits and proposed scalability work](docs/SCALABILITY_REPORT.md)
+
+## Documentation and submission package
+
+[**All reports and diagrams in one ZIP**](submission/Complete_Documentation_Package.zip) · [Four-page project report](submission/Project_Submission_Report.pdf) · [Document index](docs/INDEX.md)
+
+| Document | Covers |
+| --- | --- |
+| [Architecture and flowcharts](docs/architecture.md) | Current components, processing and trust boundaries |
+| [Test report](docs/TEST_REPORT.md) | Observed checks, fixtures, failures and evidence gaps |
+| [Scalability report](docs/SCALABILITY_REPORT.md) | Bottlenecks, current bounds and an explicitly unexecuted load-test plan |
+| [API reference](docs/API_REFERENCE.md) | Request fields, streaming responses and errors |
+| [Operations runbook](docs/OPERATIONS_RUNBOOK.md) | Release checks, incident triage and recovery planning |
+| [Demo and upload checklist](submission/START_HERE.md) | Walkthrough, package navigation and remaining submission actions |
+
+### Release and team status
+
+The existing deployment uses Vercel. The local redesign remains on `ui-antigravity` for the integration owner; no application deployment is performed by this README update. See the [UI handoff](docs/UI_HANDOFF.md).
+
+Official challenge requirements and confirmed team names/contributions were not supplied. The submission owner must add them and verify eligibility before filing the entry. Team contributions are not inferred from repository ownership. Capacity, impact and competitive ranking are not claimed without evidence.
+
 ## License
 
-Apache 2.0. See [LICENSE](LICENSE).
+[Apache 2.0](LICENSE).
