@@ -9,7 +9,7 @@ test("UI routes, responsive layouts, recoverable failure and partial results", a
   const errors: string[] = []; page.on("pageerror", e => errors.push(e.message));
   for (const width of [375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const [path, name, heading] of [["/", "landing", "See the bug."], ["/demo", "workspace", "Start with your GitHub repository."], ["/how-it-works", "guide", "Know what your review means."], ["/result", "empty", "Start with your repository."], ["/page-does-not-exist", "not-found", "This page is out of view."]]) {
+    for (const [path, name, heading] of [["/", "landing", "Check your GitHub code"], ["/demo", "workspace", "Start with your GitHub repository."], ["/how-it-works", "guide", "Know what your review means."], ["/result", "empty", "Start with your repository."], ["/page-does-not-exist", "not-found", "This page is out of view."]]) {
       await page.goto(path!);
       await expect(page.getByRole("heading", { level: 1 })).toContainText(heading!);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${name} at ${width}`).toBe(true);

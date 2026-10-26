@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/BrandLogo";
 export default function Home() {
   return <main id="main" className="landing">
     <section className="hero">
-      <div className="hero-copy"><p className="eyebrow">CODE REVIEW, WITH CONTEXT</p><h1>See the bug.<br/><em>Plan the fix.</em></h1><p className="hero-description">Turn your repository, error logs and screenshots into evidence-backed findings and a practical fix plan.</p>
+      <div className="hero-copy"><p className="eyebrow">AI CODE REVIEW WITH GEMMA 4</p><h1>Check your GitHub code<br/><em>for bugs and security issues.</em></h1><p className="hero-description">Add a public GitHub repository. BugLens reviews the code and suggests improvements. You can also add a screenshot, error log or problem description to help investigate UI issues and other bugs. Get a detailed report, fix instructions and ready-to-use prompts for your coding assistant.</p>
         <div className="hero-actions"><Link href="/demo" className="button primary">Open web app <Icon name="arrow" size={18}/></Link><Link href="/demo?sample=clipping" className="text-button">Try the sample bug</Link></div>
         <div className="hero-facts"><span><Icon name="check" size={16}/>No installation needed</span><span><Icon name="check" size={16}/>Read-only analysis</span><span><Icon name="check" size={16}/>Gemma 4 + source checks</span></div>
       </div>

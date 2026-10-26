@@ -5,7 +5,8 @@ test("sample screenshot to validated Markdown, keyboard and mobile", async ({ pa
   await page.goto("/");
   await page.keyboard.press("Tab"); await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: /See the bug/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Check your GitHub code/ })).toBeVisible();
+  await expect(page.locator(".hero-description")).toContainText("Get a detailed report, fix instructions and ready-to-use prompts for your coding assistant.");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await mkdir("docs/screenshots", { recursive: true });
   await page.screenshot({ path: `docs/screenshots/${info.project.name}-landing.png`, fullPage: true });
