@@ -4,7 +4,7 @@ Checks performed on 26 October 2026. Results below refer to the actual local com
 
 | Check | Observed result |
 | --- | --- |
-| `npm test` | 60 unit and contract tests passed across five files. |
+| `npm test` | 64 unit and contract tests passed across six files, including local and Vercel upload limits. |
 | `npm run typecheck` | Passed. |
 | `npm run evals` | All four deterministic synthetic cases passed: clear and ambiguous cases produced valid drafts; unrelated and blurred cases returned insufficient evidence. This is not a live-model benchmark. |
 | `npm run build` | Next.js 16.4.3 production build passed. Landing, demo, result, how-it-works and API routes were generated. |

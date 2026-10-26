@@ -8,7 +8,7 @@ import { ScreenshotInput } from "./ScreenshotInput";
 import { ProcessingSteps } from "./ProcessingSteps";
 import { useReport } from "./ReportSession";
 import { Icon } from "./Icon";
-export function DemoWorkspace({ initialSample, defaultMode }: { initialSample: boolean; defaultMode: "fixture" | "live" }) {
+export function DemoWorkspace({ initialSample, defaultMode, maxUploadMB }: { initialSample: boolean; defaultMode: "fixture" | "live"; maxUploadMB: number }) {
   const router = useRouter(); const session = useReport();
   const [mode, setMode] = useState<"fixture" | "live">(initialSample ? defaultMode : "live");
   const [id, setId] = useState<FixtureId>("clipping");
@@ -21,7 +21,7 @@ export function DemoWorkspace({ initialSample, defaultMode }: { initialSample: b
   useEffect(() => () => { controller.current?.abort(); if (ownedBlob.current && !handedOff.current) URL.revokeObjectURL(ownedBlob.current); }, []);
   function selectSample(next: FixtureId) { if (ownedBlob.current) URL.revokeObjectURL(ownedBlob.current); ownedBlob.current = ""; setId(next); setFile(null); setPreview(`/api/sample-image?id=${next}`); setContext({ ...fixtureCases[next].context }); setError(null); }
   function selectFile(next: File) {
-    if (next.size > 8 * 1024 * 1024) { setError({ code: "IMAGE_TOO_LARGE", message: "Choose an image smaller than 8 MB." }); return; }
+    if (next.size > maxUploadMB * 1024 * 1024) { setError({ code: "IMAGE_TOO_LARGE", message: `Choose an image smaller than ${maxUploadMB} MB.` }); return; }
     if (!["image/png", "image/jpeg", "image/webp"].includes(next.type)) { setError({ code: "INVALID_IMAGE", message: "Choose a PNG, JPEG or WebP screenshot." }); return; }
     if (ownedBlob.current) URL.revokeObjectURL(ownedBlob.current);
     const url = URL.createObjectURL(next); ownedBlob.current = url; setFile(next); setPreview(url); setMode("live"); setError(null);
@@ -54,7 +54,7 @@ export function DemoWorkspace({ initialSample, defaultMode }: { initialSample: b
   return <main id="main" className="workspace"><div className="page-intro"><p className="eyebrow">BUG REPORT WORKSPACE</p><h1>Start with what you can see.</h1><p>Add the visual symptom and the context you know. We’ll keep the evidence separate.</p></div><form onSubmit={submit}>
     <div className="mode-bar"><div><label htmlFor="provider">Analysis provider</label><select id="provider" value={mode} disabled={running} onChange={(e) => setMode(e.target.value as "fixture" | "live")}><option value="fixture">Synthetic fixture mode</option><option value="live">Live Gemma 4</option></select></div><span className={`badge ${mode === "fixture" ? "amber" : "green"}`}><span aria-hidden="true">●</span> {mode === "fixture" ? "Synthetic fixture mode" : "Live Gemma 4"}</span><p>{mode === "fixture" ? "Recorded evidence. No model call. Use an unchanged sample." : "Image + reporter context are sent to Google’s Gemini API."}</p></div>
     <div className="sample-bar"><label htmlFor="sample">Synthetic sample</label><select id="sample" value={preview && !file ? id : ""} disabled={running} onChange={(e) => { if (e.target.value) selectSample(e.target.value as FixtureId); }}><option value="" disabled>Select a sample</option>{Object.entries(fixtureCases).map(([key, value]) => <option key={key} value={key}>{value.name}</option>)}</select><button type="button" className="text-button" disabled={running} onClick={() => selectSample("clipping")}>Reset to sample ↺</button></div>
-    <div className="input-grid"><ScreenshotInput preview={preview} onFile={selectFile} disabled={running} sample={!file}/><ReporterContextForm value={context} disabled={running || mode === "fixture"} onChange={setContext}/></div>
+    <div className="input-grid"><ScreenshotInput preview={preview} onFile={selectFile} disabled={running} sample={!file} maxUploadMB={maxUploadMB}/><ReporterContextForm value={context} disabled={running || mode === "fixture"} onChange={setContext}/></div>
     <div className="repository-strip"><span className="section-number">03</span><Icon name="file"/><div><strong>Repository: synthetic checkout</strong><p>React fixture · routes, components, styles and tests. The web demo always searches this bundled repository.</p></div><span className="badge neutral">Read-only</span></div>
     <div className="privacy-box"><Icon name="alert"/><div><strong>Keep sensitive data out of screenshots.</strong><p>Do not upload secrets, access tokens, customer data, confidential interfaces or identifiable people. BugLens does not persist uploads. Live analysis is processed by Google under its API terms.</p>{mode === "live" && <label className="consent"><input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} disabled={running}/> I agree to send this image and reporter context to Google for analysis.</label>}</div></div>
     {error && <div className="error-box" role="alert"><Icon name="alert"/><div><strong>{error.code}</strong><p>{error.message}</p></div></div>}

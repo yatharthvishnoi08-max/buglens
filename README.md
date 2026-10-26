@@ -4,6 +4,8 @@ BugLens is an open-source multimodal skill that turns visual bug symptoms into r
 
 **Turn visual symptoms into repository-ready issues.**
 
+Source repository: [yatharthvishnoi08-max/buglens](https://github.com/yatharthvishnoi08-max/buglens).
+
 ## 1. Product distinction
 
 The primary artifact is [the installable agent skill](skills/buglens/SKILL.md). The website demonstrates the same implementation. The only three product capabilities are visual evidence extraction, deterministic repository grounding, and validated issue compilation.
@@ -143,7 +145,7 @@ npm run start
 
 Supply environment secrets through the hosting platform. `npm run start` binds to `0.0.0.0`; Next.js honors `PORT`. The Dockerfile is an additional deployment recipe. Docker execution has not been verified here; the ordinary Node production build/server is the verified path. Build-time archive packaging uses the `zip` and `unzip` utilities.
 
-Vercel may impose a request-size limit below the app's 8 MB setting. Use a lower `MAX_UPLOAD_MB` within the host's limit or deploy to a Node host that supports the full upload size. No automatic deployment, remote repository or external account has been created.
+Vercel deployment uses `vercel.json`, the Node.js route runtime, and explicitly bundled fixture files. On Vercel, both the server and upload UI cap images at 4 MB to leave multipart overhead below the platform's 4.5 MB request limit. Other Node hosts retain the configurable 8 MB maximum. Prebuilt source and skill ZIPs are included so hosted downloads do not need build-time `zip` utilities. Configure `GEMINI_API_KEY` as a server-only secret, `GEMMA_MODEL=gemma-4-26b-a4b-it`, `DEMO_MODE=fixture` and `MAX_UPLOAD_MB=4` for Vercel.
 
 ## 10. Environment variables
 
@@ -152,7 +154,7 @@ Vercel may impose a request-size limit below the app's 8 MB setting. Use a lower
 | `GEMINI_API_KEY` | empty | Server-side Google API credential; required only for live mode. |
 | `GEMMA_MODEL` | `gemma-4-26b-a4b-it` | Exact pinned model. Any other value fails. |
 | `DEMO_MODE` | `fixture` | Initial mode for the website's sample journey; users explicitly choose live. |
-| `MAX_UPLOAD_MB` | `8` | Application upload limit; configurable downward, capped at 8 MB. |
+| `MAX_UPLOAD_MB` | `8` locally, `4` on Vercel | Application upload limit; configurable downward. Vercel always caps at 4 MB. |
 
 Never expose the key through `NEXT_PUBLIC_`. The Gemini API is the service, while **Gemma 4** is the selected model. No Gemini-family or alternate-model fallback exists. A successful response must not report a different model identifier; an omitted identifier remains unknown.
 
@@ -162,7 +164,7 @@ Never expose the key through `NEXT_PUBLIC_`. The Gemini API is the service, whil
 | --- | --- |
 | Implemented | Installable skill, Gemma 4 multimodal adapter, strict contracts, image validation, local scanner, path/symbol/hash verification, provenance guards, compiler, fixed sections, typed failures, CLI, website, accessibility states and tests. |
 | Synthetic fixture | Checkout repository, four screenshot cases, recorded fixture analyses and expected outputs. Both modes use real local scanning and compilation. |
-| Not implemented | Public deployment, remote GitHub repository, issue publishing, automatic fixes, authentication, accounts, history, arbitrary remote cloning, analytics or semantic search. |
+| Not implemented | Issue publishing, automatic fixes, authentication, accounts, history, arbitrary remote cloning, analytics or semantic search. |
 | Future work | No additional feature scope is promised. Better evaluation coverage can replace weak existing checks. |
 
 Fixture mode accepts only the exact selected image and its original reporter context. A user upload or edited report requires live mode. A failed live request returns an error, never recorded sample output.

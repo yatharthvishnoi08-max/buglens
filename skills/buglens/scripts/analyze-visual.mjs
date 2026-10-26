@@ -18,12 +18,15 @@ function publicError(error) {
   return error instanceof BugLensError ? { code: error.code, message: error.message } : { code: "COMPILATION_FAILED", message: "The draft could not be completed. No issue was published." };
 }
 
+// src/lib/upload-limit.ts
+function maxUploadBytes() {
+  const cap = process.env.VERCEL === "1" ? 4 : 8;
+  const requested = Number(process.env.MAX_UPLOAD_MB ?? cap);
+  return (Number.isFinite(requested) && requested > 0 ? Math.min(requested, cap) : cap) * 1024 * 1024;
+}
+
 // src/lib/image.ts
 var IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
-function maxUploadBytes() {
-  const mb = Number(process.env.MAX_UPLOAD_MB ?? "8");
-  return (Number.isFinite(mb) && mb > 0 ? Math.min(mb, 8) : 8) * 1024 * 1024;
-}
 async function validateImage(bytes, mimeType) {
   if (bytes.byteLength > maxUploadBytes()) throw new BugLensError("IMAGE_TOO_LARGE", `Use an image smaller than ${maxUploadBytes() / 1024 / 1024} MB.`);
   if (!bytes.byteLength || !IMAGE_TYPES.includes(mimeType)) throw new BugLensError("INVALID_IMAGE", "Use a valid PNG, JPEG, or WebP screenshot.");

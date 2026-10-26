@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-const skipped = new Set(["node_modules", ".git", ".next", "dist", "coverage", "work", "test-results", "playwright-report"]);
+const skipped = new Set(["node_modules", ".git", ".vercel", ".next", "dist", "coverage", "work", "test-results", "playwright-report"]);
 export async function sourceFiles(root = process.cwd()): Promise<string[]> {
   const files: string[] = [];
   async function walk(dir: string) {
