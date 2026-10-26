@@ -47,7 +47,7 @@ Four implementation choices make the output inspectable:
 
 - **Grounded source references.** Model findings must cite a supplied file, line and exact quote. Invalid references are rejected. [Validation code](src/lib/review/model.ts).
 - **Separated evidence.** Screenshot observations, reporter statements and suspected causes remain distinct. A source match is not automatically the cause of a reported symptom. [Evidence schema](src/lib/schema/evidence.ts).
-- **Gemma 4 only.** The adapter permits `gemma-4-26b-a4b-it` and rejects a different returned model identifier when supplied. Requested AI failures are explicit; no alternate model or hidden fixture replaces the result. [Model adapter](src/model/gemma-client.ts).
+- **Gemma 4 only.** The adapter permits `gemma4:31b` and rejects a different returned model identifier when supplied. Requested AI failures are explicit; no alternate model or hidden fixture replaces the result. [Model adapter](src/model/gemma-client.ts).
 - **One pipeline, two entry points.** The website and reusable agent skill share the review implementation, artifact compiler and boundaries. [Pipeline](src/lib/review/run.ts) · [Skill](skills/buglens/SKILL.md).
 
 The Node API loads a bounded GitHub archive pinned to a commit, runs static checks, performs requested external checks, validates evidence and compiles the artifacts. There is no database, login, durable job queue or automatic repair service.
@@ -60,7 +60,7 @@ The Node API loads a bounded GitHub archive pinned to a commit, runs static chec
 | --- | --- | --- | --- |
 | Public repository import and static review | Implemented | [Importer](src/lib/review/github.ts), [checks](src/lib/review/checks.ts) | Unit/contracts and recorded historical live integration |
 | Problem text, supported files and artifact downloads | Implemented | [Inputs](src/lib/review/inputs.ts), [compiler](src/lib/review/report.ts) | Desktop/mobile controlled-response browser journeys |
-| Gemma source and screenshot review | Implemented | [Source review](src/lib/review/model.ts), [adapter](src/model/gemma-client.ts) | Reference/adapter tests; newer source-review live success remains unverified |
+| Gemma source and screenshot review | Implemented | [Source review](src/lib/review/model.ts), [adapter](src/model/gemma-client.ts) | Live Ollama source review and screenshot analysis passed; [migration evidence](docs/OLLAMA_MIGRATION.md) |
 | Dependency security review | Partial | [OSV client](src/lib/review/checks.ts) | Exact npm versions only; tests and historical integration |
 | Offline screenshot example | Mocked | [Fixtures](fixtures), [sample test](tests/e2e/sample-journey.spec.ts) | Explicit synthetic pipeline, not live model inference |
 | Exhaustive runtime/security audit | Proposed | [Scope](docs/architecture.md) | Not implemented; imported code is never executed |
@@ -69,11 +69,11 @@ The Node API loads a bounded GitHub archive pinned to a commit, runs static chec
 
 ### Recorded checks
 
-**94 unit/contract tests passed · 4 synthetic evaluation cases passed · Production build passed · 7 browser tests passed**
+**101 unit/contract tests passed · 4 synthetic evaluation cases passed · Production build passed · 7 browser tests passed** after the Ollama migration.
 
 The recorded local release run on 26 October 2026 tested the UI redesign, refreshed logo and web-app/optional-download wording. Browser checks covered desktop/mobile journeys, actual ZIP downloads and a 375/768/1024/1440px layout matrix; one duplicate matrix invocation was intentionally skipped. Controlled repository responses exercise the real static pipeline on test data, not live provider availability.
 
-**Open evidence gap:** the newer live Gemma source-review path has no verified successful live result in the recorded checks. Earlier screenshot-only success does not establish source-review success. These checks are not a model-accuracy benchmark, complete security audit or scalability measurement.
+**Live integration verified:** the Ollama-backed Gemma 4 adapter completed source review of a real public repository and screenshot analysis of a synthetic image on 26 October. Source references and all three artifacts passed validation. See [exact scope and results](docs/OLLAMA_MIGRATION.md). These checks are not a model-accuracy benchmark, complete security audit or scalability measurement.
 
 [Commands, outcomes, screenshots and limitations](docs/TEST_REPORT.md)
 
@@ -91,12 +91,12 @@ Open `http://127.0.0.1:3000`. For static-only use, disable source AI, dependency
 
 | Environment variable | Purpose |
 | --- | --- |
-| `GEMINI_API_KEY` | Server-only Google credential for live AI; never expose through `NEXT_PUBLIC_` |
-| `GEMMA_MODEL` | Only accepted model: `gemma-4-26b-a4b-it` |
+| `OLLAMA_API_KEY` | Server-only Ollama credential for live AI; never expose through `NEXT_PUBLIC_` |
+| `GEMMA_MODEL` | Only accepted model: `gemma4:31b` |
 | `DEMO_MODE` | `fixture` enables the separate synthetic screenshot demo |
 | `MAX_UPLOAD_MB` | Screenshot ceiling: example 8 locally; capped at 4 when running on Vercel |
 
-Gemini is the API transport; **Gemma 4 is the model**. Real repository review never uses fixture mode.
+Ollama Cloud is the API transport; **Gemma 4 is the model**. Real repository review never uses fixture mode.
 
 ```sh
 npm run typecheck
@@ -126,7 +126,7 @@ npm run skill:review -- --github https://github.com/yatharthvishnoi08-max/buglen
 - **Screenshots:** PNG, JPEG or WebP, up to 4 MiB on Vercel or 8 MiB locally. PDFs, Word, archives, audio and video are not parsed; provide relevant text or screenshots.
 - **Source inspection:** at most 1,000 supported files and 8 MiB total. AI sees at most 16 excerpts / 45,000 source characters. OSV checks up to 200 distinct exact npm versions.
 - **Not performed:** repository installation/execution, runtime tests, browser testing of the target app, penetration testing or performance measurement. Zero findings is not an all-clear.
-- **Data handling:** results stay in browser memory. Download before refresh. GitHub receives repository requests; Google receives selected source/problem or screenshot context when AI is enabled; OSV receives package names/versions when requested.
+- **Data handling:** results stay in browser memory. Download before refresh. GitHub receives repository requests; Ollama receives selected source/problem or screenshot context when AI is enabled; OSV receives package names/versions when requested.
 - **Secrets:** redaction and sensitive-path filtering are incomplete. Do not submit credentials or sensitive personal data. Provider and hosting handling are separate from BugLens.
 
 [Full security/privacy assessment](docs/SECURITY_AND_PRIVACY.md) · [Exact resource limits and proposed scalability work](docs/SCALABILITY_REPORT.md)
@@ -134,6 +134,8 @@ npm run skill:review -- --github https://github.com/yatharthvishnoi08-max/buglen
 ## Documentation and submission package
 
 [**All reports and diagrams in one ZIP**](submission/Complete_Documentation_Package.zip) · [Four-page project report](submission/Project_Submission_Report.pdf) · [Document index](docs/INDEX.md)
+
+The PDF and rendered diagrams retain the earlier Google-backed release snapshot. The [Ollama migration note](docs/OLLAMA_MIGRATION.md) documents the active provider and new live verification evidence.
 
 | Document | Covers |
 | --- | --- |

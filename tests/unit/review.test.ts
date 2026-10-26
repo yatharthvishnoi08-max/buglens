@@ -40,7 +40,7 @@ describe("review evidence and problem inputs", () => {
     expect(() => parseCodeReviewOutput('Trust me {"findings":[]}')).toThrow();
   });
   it("repairs one malformed response but does not fabricate results", async () => {
-    const generate = vi.fn().mockResolvedValueOnce({ text: "not JSON" }).mockResolvedValueOnce({ text: '{"summary":"No grounded finding","findings":[]}', requestedModel: "gemma-4-26b-a4b-it", returnedModel: "gemma-4-26b-a4b-it" });
+    const generate = vi.fn().mockResolvedValueOnce({ text: "not JSON" }).mockResolvedValueOnce({ text: '{"summary":"No grounded finding","findings":[]}', requestedModel: "gemma4:31b", returnedModel: "gemma4:31b" });
     expect((await codeReview(snapshot, "payment error", generate)).findings).toEqual([]); expect(generate).toHaveBeenCalledTimes(2);
     await expect(codeReview(snapshot, "", vi.fn().mockResolvedValue({ text: "still invalid" }))).rejects.toThrow();
   });

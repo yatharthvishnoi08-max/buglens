@@ -14,7 +14,7 @@ function arg(name: string) { const i = process.argv.indexOf(`--${name}`); return
 async function json(file: string | undefined) { if (!file) throw new Error("Missing JSON file argument"); return JSON.parse(await readFile(path.resolve(file), "utf8")); }
 export async function cli(action: "analyze" | "scan" | "validate" | "compile") {
   try {
-    if (process.argv.includes("--help")) { console.log("Run from the BugLens project or installed skill directory. --sample uses the labeled synthetic fixture. Live: --image screenshot.png --context reporter.json --repo /absolute/repo. Staged: --analysis analysis.json --repository repository.json. Credentials come only from GEMINI_API_KEY. See SKILL.md."); return; }
+    if (process.argv.includes("--help")) { console.log("Run from the BugLens project or installed skill directory. --sample uses the labeled synthetic fixture. Live: --image screenshot.png --context reporter.json --repo /absolute/repo. Staged: --analysis analysis.json --repository repository.json. Credentials come only from OLLAMA_API_KEY. See SKILL.md."); return; }
     const sample = process.argv.includes("--sample");
     const fixtureId = (arg("case") ?? "clipping") as FixtureId;
     if (!(fixtureId in fixtureCases)) throw new Error("Unknown case");

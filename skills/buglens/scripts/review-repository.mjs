@@ -329,9 +329,8 @@ var STATIC_RULE_COUNT = rules.length + 1;
 import { z as z4 } from "zod";
 
 // src/model/gemma-client.ts
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-var GEMMA_MODEL = "gemma-4-26b-a4b-it";
-var GEMMA_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMMA_MODEL}:generateContent`;
+var GEMMA_MODEL = "gemma4:31b";
+var GEMMA_ENDPOINT = "https://ollama.com/api/chat";
 var GemmaError = class extends Error {
   constructor(code, message, status) {
     super(message);
@@ -356,48 +355,51 @@ async function generateGemma4(parts) {
   if (configuredModel !== GEMMA_MODEL || process.env.BUGLENS_GEMMA_MODEL && process.env.BUGLENS_GEMMA_MODEL !== GEMMA_MODEL) {
     throw new GemmaError("MODEL_NOT_ALLOWED", `BugLens is pinned to ${GEMMA_MODEL}.`);
   }
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = process.env.OLLAMA_API_KEY?.trim();
   if (!apiKey) {
-    throw new GemmaError("API_KEY_REQUIRED", "Set GEMINI_API_KEY in the server environment.");
+    throw new GemmaError("API_KEY_REQUIRED", "Set OLLAMA_API_KEY in the server environment.");
   }
   let payload;
   try {
-    const client = new GoogleGenAI({ apiKey, vertexai: false, httpOptions: {
-      apiVersion: "v1beta",
-      baseUrl: "https://generativelanguage.googleapis.com",
-      timeout: 45e3,
-      retryOptions: { attempts: 1 },
-      fetch: (input, init) => {
-        const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
-        if (`${url.origin}${url.pathname}` !== GEMMA_ENDPOINT) throw new Error("Endpoint is not allowed");
-        return fetch(input, { ...init, redirect: "error", cache: "no-store" });
-      }
-    } });
-    payload = await client.models.generateContent({
-      model: GEMMA_MODEL,
-      contents: [{ role: "user", parts: [...parts] }],
-      config: { temperature: 0, maxOutputTokens: 4096, thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL }, abortSignal: AbortSignal.timeout(45e3) }
+    const images = parts.flatMap((part) => "inlineData" in part ? [part.inlineData.data] : []);
+    const response = await fetch(GEMMA_ENDPOINT, {
+      method: "POST",
+      redirect: "error",
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(45e3),
+      body: JSON.stringify({
+        model: GEMMA_MODEL,
+        messages: [{ role: "user", content: parts.flatMap((part) => "text" in part ? [part.text] : []).join("\n\n"), ...images.length ? { images } : {} }],
+        stream: false,
+        think: false,
+        options: { temperature: 0, num_predict: 4096 }
+        // Ollama Cloud does not support schema-constrained output. Callers
+        // request JSON in the prompt and validate it locally before use.
+      })
     });
+    if (!response.ok) {
+      await response.body?.cancel();
+      const detail = response.status === 429 ? "Ollama's Gemma 4 rate or usage limit was reached. Wait before retrying and check the Ollama account's usage." : response.status === 401 || response.status === 403 ? "Ollama could not authorize Gemma 4. Check the server API key and account access." : `Ollama returned HTTP ${response.status} for Gemma 4.`;
+      throw new GemmaError("MODEL_UNAVAILABLE", `${detail} No alternative model or fixture was used.`, response.status);
+    }
+    payload = await response.json();
   } catch (error) {
+    if (error instanceof GemmaError) throw error;
     if (error instanceof SyntaxError) return invalidOutput();
-    const status = isObject(error) && typeof error.status === "number" ? error.status : void 0;
-    throw new GemmaError("MODEL_UNAVAILABLE", status ? `Gemma returned HTTP ${status}; no alternative model or fixture was used.` : "The Gemma request failed or timed out.", status);
+    throw new GemmaError("MODEL_UNAVAILABLE", "The Ollama Gemma 4 request failed or timed out. No alternative model or fixture was used.");
   }
   if (!isObject(payload)) return invalidOutput();
-  const modelVersion = payload.modelVersion;
+  const modelVersion = payload.model;
   if (modelVersion !== void 0 && modelVersion !== GEMMA_MODEL) {
     throw new GemmaError("MODEL_NOT_ALLOWED", "The returned model identifier did not match the pinned Gemma model.");
   }
-  if (isObject(payload.promptFeedback) && payload.promptFeedback.blockReason) {
+  const message = payload.message;
+  if (payload.error || payload.done !== true || payload.done_reason !== "stop" || !isObject(message) || message.role !== "assistant" || typeof message.content !== "string") {
     return invalidOutput();
   }
-  const candidate = Array.isArray(payload.candidates) ? payload.candidates[0] : void 0;
-  if (!isObject(candidate) || candidate.finishReason !== "STOP" || !isObject(candidate.content)) {
-    return invalidOutput();
-  }
-  const outputParts = candidate.content.parts;
-  if (!Array.isArray(outputParts)) return invalidOutput();
-  const text = outputParts.filter((part) => isObject(part) && part.thought !== true && typeof part.text === "string").map((part) => part.text).join("").trim();
+  if (message.tool_calls !== void 0 && (!Array.isArray(message.tool_calls) || message.tool_calls.length > 0)) return invalidOutput();
+  const text = message.content.trim();
   if (!text) return invalidOutput();
   return {
     text,

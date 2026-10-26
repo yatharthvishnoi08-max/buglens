@@ -1,5 +1,7 @@
 # Architecture and trust boundaries
 
+**Provider update:** the active model node is now **Ollama Cloud / `gemma4:31b`**, using server-only `OLLAMA_API_KEY`. All references to the Google API below describe the earlier transport, not an additional data recipient. The boundaries and processing flow are unchanged. See [migration details and live evidence](OLLAMA_MIGRATION.md).
+
 The repository-first UI and refreshed branding were published in release `a6605e5`. No database, authentication service or automatic repair executor exists.
 
 ## Component boundaries

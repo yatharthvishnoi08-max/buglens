@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     let rawContext: unknown;
     try { rawContext = JSON.parse(String(form.get("context"))); } catch { throw new BugLensError("REPORTER_CONTEXT_REQUIRED", "Supply valid reporter context."); }
     const context = reporterContext(rawContext);
-    if (mode === "live" && form.get("consent") !== "yes") throw new BugLensError("REPORTER_CONTEXT_REQUIRED", "Confirm that the image and reporter context may be sent to Google's Gemini API.");
+    if (mode === "live" && form.get("consent") !== "yes") throw new BugLensError("REPORTER_CONTEXT_REQUIRED", "Confirm that the image and reporter context may be sent to Ollama Cloud.");
     const upload = form.get("image");
     const image = upload instanceof File ? new Uint8Array(await upload.arrayBuffer()) : await readFile(fixtureImagePath(fixtureId));
     const mimeType = upload instanceof File ? upload.type : "image/png";

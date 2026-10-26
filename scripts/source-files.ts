@@ -13,11 +13,18 @@ export async function sourceFiles(root = process.cwd()): Promise<string[]> {
   await walk(""); return files;
 }
 export async function assertNoKey(files: string[]) {
-  let key = process.env.GEMINI_API_KEY ?? "";
-  if (!key) { try { key = (await readFile(".env.local", "utf8")).match(/^GEMINI_API_KEY=(.+)$/m)?.[1]?.trim() ?? ""; } catch { /* A fresh checkout has no key. */ } }
+  const names = ["OLLAMA_API_KEY", "GEMINI_API_KEY"];
+  const keys = names.map(name => process.env[name]?.trim()).filter((key): key is string => !!key);
+  try {
+    const local = await readFile(".env.local", "utf8");
+    for (const name of names) {
+      const value = local.match(new RegExp(`^${name}=(.+)$`, "m"))?.[1]?.trim().replace(/^(['"])(.*)\1$/, "$2");
+      if (value) keys.push(value);
+    }
+  } catch { /* A fresh checkout has no key. */ }
   for (const file of files) {
     const data = await readFile(file);
-    if (key && data.includes(Buffer.from(key))) throw new Error(`Credential content detected in ${file}; packaging stopped.`);
+    if (keys.some(key => data.includes(Buffer.from(key)))) throw new Error(`Credential content detected in ${file}; packaging stopped.`);
     if (/\.env(?:\.|$)/.test(path.basename(file)) && path.basename(file) !== ".env.example") throw new Error("Environment file is not allowed in source archive.");
   }
 }

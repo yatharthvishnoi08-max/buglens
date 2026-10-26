@@ -9,7 +9,7 @@
 | User to API | URL, problem text, attachments, screenshot | Type/size/form checks and external-processing consent | Consent is not identity or authorization; no account-level rate limit |
 | API to GitHub | Public repo/commit lookup | Fixed GitHub hosts, HTTPS, redirects rejected, commit pinning | Public access limits/outages; public source is still untrusted |
 | Archive to review runtime | Compressed source | Size caps, path/type filtering, no filesystem extraction or execution | In-memory/CPU pressure; parsing libraries still require maintenance |
-| API to Google | Selected source and context, or normalized screenshot/context | Server-only credential; model and endpoint allowlist; limited excerpts | Redaction is incomplete; provider handling is outside this code |
+| API to Ollama | Selected source and context, or normalized screenshot/context | Server-only credential; model and endpoint allowlist; limited excerpts | Redaction is incomplete; provider handling is outside this code |
 | API to OSV | Package names and exact versions | Bounded batch and response; no source submission | Package metadata still leaves the application |
 | Findings to user/agent | Source quotes, explanations and fix prompts | Exact source-reference validation; uncertainty/provenance; verification-first prompt | Prompt injection, false positives and unsafe downstream execution remain possible |
 

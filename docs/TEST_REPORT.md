@@ -1,5 +1,9 @@
 # Verification report
 
+## Latest provider update — Ollama Cloud
+
+The 26 October Ollama migration passed 101 unit/contract tests plus real Gemma 4 repository and screenshot calls. See the [migration evidence](OLLAMA_MIGRATION.md) for exact inputs, returned model and limitations. This supersedes the source-AI evidence gap in the historical UI-release table below; old checks are retained without relabeling them as new runs.
+
 Date: 26 October 2026 (Asia/Kolkata, UTC+05:30). Environment: local macOS, Node 20.18.0, Next.js 16.4.3, Chromium via Playwright. Release checks cover the `ui-antigravity` redesign, refreshed logo and clarified web-app/optional-download flow, integrated with documentation base `c92e12d`. These are observed local checks, not hosted CI results or an accuracy benchmark.
 
 ## Current verification

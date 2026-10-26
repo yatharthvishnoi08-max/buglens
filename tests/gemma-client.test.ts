@@ -6,8 +6,8 @@ const mockFetch = vi.fn<typeof fetch>();
 
 function reply(overrides: Record<string, unknown> = {}) {
   return new Response(JSON.stringify({
-    modelVersion: GEMMA_MODEL,
-    candidates: [{ finishReason: "STOP", content: { parts: [{ text: "OK" }] } }],
+    model: GEMMA_MODEL, done: true, done_reason: "stop",
+    message: { role: "assistant", content: "OK" },
     ...overrides,
   }), { status: 200 });
 }
@@ -15,7 +15,7 @@ function reply(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   mockFetch.mockReset();
   vi.stubGlobal("fetch", mockFetch);
-  vi.stubEnv("GEMINI_API_KEY", fakeKey);
+  vi.stubEnv("OLLAMA_API_KEY", fakeKey);
   vi.stubEnv("BUGLENS_GEMMA_MODEL", GEMMA_MODEL);
   vi.stubEnv("GEMMA_MODEL", GEMMA_MODEL);
 });
@@ -40,12 +40,15 @@ describe("Gemma 4 only transport", () => {
       cache: "no-store",
     }));
     const request = mockFetch.mock.calls[0]?.[1];
-    expect(new Headers(request?.headers).get("x-goog-api-key")).toBe(fakeKey);
-    expect(JSON.parse(String(request?.body)).contents).toEqual([{ role: "user", parts }]);
+    expect(new Headers(request?.headers).get("Authorization")).toBe(`Bearer ${fakeKey}`);
+    const body = JSON.parse(String(request?.body));
+    expect(body.messages).toEqual([{ role: "user", content: "Inspect visible clipping.", images: ["test-base64"] }]);
+    expect(body).toMatchObject({ model: GEMMA_MODEL, stream: false, think: false });
+    expect(body).not.toHaveProperty("format");
     expect(GEMMA_ENDPOINT).not.toContain(fakeKey);
   });
 
-  it.each(["gemini-flash-latest", "gemini-4-argon", "gemma-3-27b-it"])(
+  it.each(["gemini-flash-latest", "gemini-4-argon", "gemma-3-27b-it", "gemma-4-26b-a4b-it", "gemma4:latest"])(
     "rejects configuration for %s before any request", async (model) => {
       vi.stubEnv("BUGLENS_GEMMA_MODEL", model);
       await expect(generateGemma4([{ text: "OK" }])).rejects.toMatchObject({ code: "MODEL_NOT_ALLOWED" });
@@ -54,7 +57,8 @@ describe("Gemma 4 only transport", () => {
   );
 
   it("does not call the provider with a missing key", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("OLLAMA_API_KEY", "");
+    vi.stubEnv("GEMINI_API_KEY", fakeKey);
     await expect(generateGemma4([{ text: "OK" }])).rejects.toMatchObject({ code: "API_KEY_REQUIRED" });
     expect(mockFetch).not.toHaveBeenCalled();
   });
@@ -80,20 +84,23 @@ describe("Gemma 4 only transport", () => {
   });
 
   it("rejects a response reporting a different model", async () => {
-    mockFetch.mockResolvedValue(reply({ modelVersion: "gemini-flash-latest" }));
+    mockFetch.mockResolvedValue(reply({ model: "gemini-flash-latest" }));
     await expect(generateGemma4([{ text: "OK" }])).rejects.toMatchObject({ code: "MODEL_NOT_ALLOWED" });
   });
 
   it("does not invent a returned model identifier if the provider omits it", async () => {
-    mockFetch.mockResolvedValue(reply({ modelVersion: undefined }));
+    mockFetch.mockResolvedValue(reply({ model: undefined }));
     expect((await generateGemma4([{ text: "OK" }])).returnedModel).toBeNull();
   });
 
   it.each([
-    { candidates: [] },
-    { candidates: [{ finishReason: "MAX_TOKENS", content: { parts: [{ text: "partial" }] } }] },
-    { candidates: [{ finishReason: "STOP", content: { parts: [{ thought: true, text: "hidden" }] } }] },
-    { promptFeedback: { blockReason: "SAFETY" } },
+    { message: undefined },
+    { done: false },
+    { done_reason: "length" },
+    { message: { role: "assistant", thinking: "hidden", content: "" } },
+    { message: { role: "user", content: "not assistant output" } },
+    { message: { role: "assistant", content: "OK", tool_calls: [{ function: { name: "exec" } }] } },
+    { error: "provider rejected request" },
   ])("rejects missing, incomplete, or blocked model output", async (payload) => {
     mockFetch.mockResolvedValue(reply(payload));
     await expect(generateGemma4([{ text: "OK" }])).rejects.toMatchObject({ code: "MODEL_OUTPUT_INVALID" });
@@ -102,5 +109,19 @@ describe("Gemma 4 only transport", () => {
   it("rejects malformed provider JSON", async () => {
     mockFetch.mockResolvedValue(new Response("not JSON", { status: 200 }));
     await expect(generateGemma4([{ text: "OK" }])).rejects.toMatchObject({ code: "MODEL_OUTPUT_INVALID" });
+  });
+
+  it("uses only final answer text and omits empty image input", async () => {
+    mockFetch.mockResolvedValue(reply({ message: { role: "assistant", content: " OK ", thinking: "private reasoning" } }));
+    expect((await generateGemma4([{ text: "one" }, { text: "two" }])).text).toBe("OK");
+    expect(JSON.parse(String(mockFetch.mock.calls[0]?.[1]?.body)).messages).toEqual([{ role: "user", content: "one\n\ntwo" }]);
+  });
+
+  it("identifies an Ollama limit without exposing the upstream body or key", async () => {
+    mockFetch.mockResolvedValue(new Response(`secret ${fakeKey}`, { status: 429 }));
+    const error = await generateGemma4([{ text: "OK" }]).catch((value: unknown) => value);
+    expect(error).toMatchObject({ code: "MODEL_UNAVAILABLE", status: 429 });
+    expect(String(error)).toContain("Ollama's Gemma 4 rate or usage limit");
+    expect(String(error)).not.toContain(fakeKey);
   });
 });

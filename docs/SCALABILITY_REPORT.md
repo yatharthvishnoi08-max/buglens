@@ -69,7 +69,7 @@ flowchart LR
       artifactStore["Encrypted artifacts with expiry"]
     end
     subgraph external ["Existing provider integrations"]
-      providers["GitHub, Google and OSV"]
+      providers["GitHub, Ollama and OSV"]
     end
     futureClient -->|"Submit job"| admission
     admission -->|"Validate and admit"| jobApi
@@ -93,7 +93,7 @@ Caching user text/images or results introduces privacy, authorization and retent
 
 ## Proposed load-test protocol
 
-**Not executed.** Run only on an owner-approved isolated deployment and synthetic repositories. Do not load-test the public production URL, GitHub, Google or OSV without authorization and suitable quotas.
+**Not executed.** Run only on an owner-approved isolated deployment and synthetic repositories. Do not load-test the public production URL, GitHub, Ollama or OSV without authorization and suitable quotas.
 
 - Separate deterministic tests with controlled providers from a small, capped real-provider smoke test.
 - Test small/medium/near-limit archives; many tiny files; high-compression input rejected at the expanded cap; screenshot normalization; long evidence; empty results.

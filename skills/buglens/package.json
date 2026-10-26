@@ -8,7 +8,6 @@
     "node": ">=20.18.0"
   },
   "dependencies": {
-    "@google/genai": "^2.31.0",
     "zod": "^4.6.7",
     "sharp": "^0.35.5",
     "tar-stream": "^3.2.2"

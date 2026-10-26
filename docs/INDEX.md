@@ -2,6 +2,8 @@
 
 Start with the [README](../README.md).
 
+**Latest update:** [Gemma 4 on Ollama Cloud](OLLAMA_MIGRATION.md) supersedes the Google transport in older reports and diagram exports. The PDF remains a dated release snapshot.
+
 | Document | Question answered |
 | --- | --- |
 | [Demo guide](DEMO_GUIDE.md) | How do I reproduce the journey in 90 seconds and handle failures? |
