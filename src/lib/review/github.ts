@@ -8,6 +8,9 @@ const MAX_ARCHIVE = 20 * 1024 * 1024;
 const MAX_EXPANDED = 64 * 1024 * 1024;
 const MAX_SOURCE = 8 * 1024 * 1024;
 const MAX_FILES = 1000;
+class RepositorySizeError extends BugLensError {
+  constructor() { super("REPOSITORY_UNAVAILABLE", "Repository response exceeds the bounded download size."); }
+}
 export function parseGitHubUrl(value: string) {
   let url: URL;
   try { url = new URL(value.trim()); } catch { throw new BugLensError("REPOSITORY_UNAVAILABLE", "Enter a public GitHub repository URL, for example https://github.com/owner/repo."); }
@@ -26,10 +29,10 @@ export function eligiblePath(name: string) {
   return safeReviewPath(name) && !name.split("/").some(p => ignored.has(p)) && !sensitivePath(name) && !/(?:\.min\.(?:js|css)|\.map|\.d\.ts)$/.test(name) && /\.(?:[cm]?[jt]sx?|css|scss|html?|vue|svelte|py|go|rs|java|rb|php|sql|ya?ml|json|sh)$|(?:^|\/)(?:Dockerfile|requirements\.txt|Cargo\.toml|go\.mod)$/i.test(name);
 }
 export async function boundedResponse(response: Response, max: number): Promise<Buffer> {
-  if (Number(response.headers.get("content-length")) > max) throw new BugLensError("REPOSITORY_UNAVAILABLE", "Repository response exceeds this demo's safe size limit.");
+  if (Number(response.headers.get("content-length")) > max) { await response.body?.cancel(); throw new RepositorySizeError(); }
   const reader = response.body?.getReader(); if (!reader) throw new BugLensError("REPOSITORY_UNAVAILABLE", "Repository response was empty.");
   let bytes = 0; const chunks: Uint8Array[] = [];
-  while (true) { const { done, value } = await reader.read(); if (done) break; bytes += value.byteLength; if (bytes > max) { await reader.cancel(); throw new BugLensError("REPOSITORY_UNAVAILABLE", "Repository is too large for this demo. Use a smaller repository or the local skill."); } chunks.push(value); }
+  while (true) { const { done, value } = await reader.read(); if (done) break; bytes += value.byteLength; if (bytes > max) { await reader.cancel(); throw new RepositorySizeError(); } chunks.push(value); }
   return Buffer.concat(chunks);
 }
 export async function parseArchive(archive: Buffer): Promise<Omit<Snapshot, "repository">> {
@@ -67,18 +70,54 @@ export async function parseArchive(archive: Buffer): Promise<Omit<Snapshot, "rep
 }
 export async function loadGitHubRepository(value: string, request: typeof fetch = fetch): Promise<Snapshot> {
   const repo = parseGitHubUrl(value);
-  async function json(url: string) {
+  async function json(url: string, max = 1_000_000) {
     const response = await request(url, { headers: { Accept: "application/vnd.github+json", "User-Agent": "BugLens-repository-review" }, redirect: "error", cache: "no-store", signal: AbortSignal.timeout(15_000) });
     if (!response.ok) throw new BugLensError("REPOSITORY_UNAVAILABLE", response.status === 403 || response.status === 429 ? "GitHub's anonymous API limit was reached. Retry later; no sample repository was substituted." : "This public GitHub repository could not be read. Private repositories and moved URLs are not supported.");
-    return JSON.parse((await boundedResponse(response, 1_000_000)).toString("utf8"));
+    return JSON.parse((await boundedResponse(response, max)).toString("utf8"));
   }
   try {
     const metadata = await json(`https://api.github.com/repos/${repo.owner}/${repo.name}`);
     if (metadata.private || typeof metadata.default_branch !== "string" || metadata.default_branch.length > 200) throw new BugLensError("REPOSITORY_UNAVAILABLE", "Only public repositories with a default branch are supported.");
     const commit = await json(`https://api.github.com/repos/${repo.owner}/${repo.name}/commits/${encodeURIComponent(metadata.default_branch)}`);
     if (typeof commit.sha !== "string" || !/^[a-f0-9]{40}$/.test(commit.sha)) throw new BugLensError("REPOSITORY_UNAVAILABLE", "A fixed repository commit could not be established.");
+    const repository = { ...repo, branch: metadata.default_branch, commit: commit.sha };
+    async function selective(): Promise<Snapshot> {
+      const listing = await json(`https://api.github.com/repos/${repo.owner}/${repo.name}/git/trees/${commit.sha}?recursive=1`, 16 * 1024 * 1024);
+      if (!Array.isArray(listing.tree)) throw new BugLensError("REPOSITORY_UNAVAILABLE", "GitHub did not return a source-file listing.");
+      type Entry = { path: string; type: string; mode: string; size: number };
+      const entries: Entry[] = listing.tree.filter((e: Entry) => e && typeof e.path === "string" && e.type !== "tree");
+      const eligible = entries.filter(e => e.type === "blob" && e.mode !== "120000" && eligiblePath(e.path));
+      const priority = (p: string) => /(?:^|\/)(?:package(?:-lock)?\.json|requirements\.txt|Dockerfile)$/.test(p) ? 0 : /(?:auth|security|middleware|server|route|api)/i.test(p) ? 1 : /(?:src|app|lib)\//.test(p) ? 2 : 3;
+      const selected: Entry[] = []; let reserved = 0;
+      for (const entry of eligible.sort((a, b) => priority(a.path) - priority(b.path) || a.path.localeCompare(b.path))) {
+        const limit = /(?:^|\/)package-lock\.json$/.test(entry.path) ? 2_000_000 : 256_000;
+        if (!Number.isSafeInteger(entry.size) || entry.size < 0 || entry.size > limit || selected.length >= 150 || reserved + entry.size > MAX_SOURCE) continue;
+        selected.push(entry); reserved += entry.size;
+      }
+      const files: SourceFile[] = []; let index = 0; const deadline = Date.now() + 40_000;
+      await Promise.all(Array.from({ length: 8 }, async () => {
+        while (index < selected.length && Date.now() < deadline) {
+          const entry = selected[index++]!;
+          try {
+            const url = `https://raw.githubusercontent.com/${repo.owner}/${repo.name}/${commit.sha}/${entry.path.split("/").map(encodeURIComponent).join("/")}`;
+            const response = await request(url, { redirect: "error", cache: "no-store", signal: AbortSignal.timeout(Math.min(8_000, Math.max(1, deadline - Date.now()))) });
+            if (!response.ok) { await response.body?.cancel(); continue; }
+            const data = await boundedResponse(response, entry.size);
+            if (data.length !== entry.size || data.includes(0)) continue;
+            files.push({ path: entry.path, content: data.toString("utf8"), sha256: createHash("sha256").update(data).digest("hex") });
+          } catch { /* Missing or oversized individual files remain disclosed as skipped. */ }
+        }
+      }));
+      if (!files.length) throw new BugLensError("REPOSITORY_UNAVAILABLE", "No supported source files could be fetched from this repository's file listing.");
+      return { repository, files: files.sort((a, b) => a.path.localeCompare(b.path)), totalFiles: entries.length, eligibleFiles: eligible.length, skippedFiles: entries.length - files.length, sensitivePaths: entries.filter(e => safeReviewPath(e.path) && sensitivePath(e.path)).map(e => e.path).slice(0, 50), bytes: files.reduce((n, f) => n + Buffer.byteLength(f.content), 0), truncated: listing.truncated === true || files.length < eligible.length, importNote: `Large-repository selective import: fetched ${files.length} source files without downloading the full archive. Limited to 150 files / 8 MB, prioritizing manifests, security, API and application paths. ${listing.truncated === true ? "GitHub truncated its file listing; displayed totals are lower bounds, not full-repository counts." : "Skipped files and unsupported assets were not reviewed."}` };
+    }
+    if (typeof metadata.size === "number" && metadata.size > 20 * 1024) return await selective();
     const response = await request(`https://codeload.github.com/${repo.owner}/${repo.name}/tar.gz/${commit.sha}`, { redirect: "error", cache: "no-store", signal: AbortSignal.timeout(25_000) });
     if (!response.ok) throw new BugLensError("REPOSITORY_UNAVAILABLE", "The repository snapshot could not be downloaded.");
-    return { repository: { ...repo, branch: metadata.default_branch, commit: commit.sha }, ...await parseArchive(await boundedResponse(response, MAX_ARCHIVE)) };
+    try { return { repository, ...await parseArchive(await boundedResponse(response, MAX_ARCHIVE)) }; }
+    catch (error) {
+      if (error instanceof RepositorySizeError || error instanceof BugLensError && error.message.includes("64 MB expanded")) return await selective();
+      throw error;
+    }
   } catch (error) { if (error instanceof BugLensError) throw error; throw new BugLensError("REPOSITORY_UNAVAILABLE", "GitHub could not be reached or the repository response was invalid. Retry later."); }
 }

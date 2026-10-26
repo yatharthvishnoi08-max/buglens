@@ -122,6 +122,7 @@ npm run skill:review -- --github https://github.com/yatharthvishnoi08-max/buglen
 ## Supported scope, privacy and limits
 
 - **Repositories:** public GitHub repositories, default branch only. No private-repository login or branch selection.
+- **Large repositories:** selective source import avoids full-archive downloads; up to 150 prioritized files / 8 MiB are read with explicit skipped-file and partial-coverage reporting. [Limits](docs/LARGE_REPOSITORIES.md).
 - **Problem inputs:** direct text and up to three supported UTF-8 text/code attachments. Each input is limited to 20,000 characters; combined problem text is limited to 60,000 bytes.
 - **Screenshots:** PNG, JPEG or WebP, up to 4 MiB on Vercel or 8 MiB locally. PDFs, Word, archives, audio and video are not parsed; provide relevant text or screenshots.
 - **Source inspection:** at most 1,000 supported files and 8 MiB total. AI sees at most 16 excerpts / 45,000 source characters. OSV checks up to 200 distinct exact npm versions.

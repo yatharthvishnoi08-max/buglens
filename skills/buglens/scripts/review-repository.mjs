@@ -129,6 +129,11 @@ var MAX_ARCHIVE = 20 * 1024 * 1024;
 var MAX_EXPANDED = 64 * 1024 * 1024;
 var MAX_SOURCE = 8 * 1024 * 1024;
 var MAX_FILES = 1e3;
+var RepositorySizeError = class extends BugLensError {
+  constructor() {
+    super("REPOSITORY_UNAVAILABLE", "Repository response exceeds the bounded download size.");
+  }
+};
 function parseGitHubUrl(value) {
   let url;
   try {
@@ -153,7 +158,10 @@ function eligiblePath(name) {
   return safeReviewPath(name) && !name.split("/").some((p) => ignored.has(p)) && !sensitivePath(name) && !/(?:\.min\.(?:js|css)|\.map|\.d\.ts)$/.test(name) && /\.(?:[cm]?[jt]sx?|css|scss|html?|vue|svelte|py|go|rs|java|rb|php|sql|ya?ml|json|sh)$|(?:^|\/)(?:Dockerfile|requirements\.txt|Cargo\.toml|go\.mod)$/i.test(name);
 }
 async function boundedResponse(response, max) {
-  if (Number(response.headers.get("content-length")) > max) throw new BugLensError("REPOSITORY_UNAVAILABLE", "Repository response exceeds this demo's safe size limit.");
+  if (Number(response.headers.get("content-length")) > max) {
+    await response.body?.cancel();
+    throw new RepositorySizeError();
+  }
   const reader = response.body?.getReader();
   if (!reader) throw new BugLensError("REPOSITORY_UNAVAILABLE", "Repository response was empty.");
   let bytes = 0;
@@ -164,7 +172,7 @@ async function boundedResponse(response, max) {
     bytes += value.byteLength;
     if (bytes > max) {
       await reader.cancel();
-      throw new BugLensError("REPOSITORY_UNAVAILABLE", "Repository is too large for this demo. Use a smaller repository or the local skill.");
+      throw new RepositorySizeError();
     }
     chunks.push(value);
   }
@@ -226,19 +234,63 @@ async function parseArchive(archive) {
 }
 async function loadGitHubRepository(value, request = fetch) {
   const repo = parseGitHubUrl(value);
-  async function json(url) {
+  async function json(url, max = 1e6) {
     const response = await request(url, { headers: { Accept: "application/vnd.github+json", "User-Agent": "BugLens-repository-review" }, redirect: "error", cache: "no-store", signal: AbortSignal.timeout(15e3) });
     if (!response.ok) throw new BugLensError("REPOSITORY_UNAVAILABLE", response.status === 403 || response.status === 429 ? "GitHub's anonymous API limit was reached. Retry later; no sample repository was substituted." : "This public GitHub repository could not be read. Private repositories and moved URLs are not supported.");
-    return JSON.parse((await boundedResponse(response, 1e6)).toString("utf8"));
+    return JSON.parse((await boundedResponse(response, max)).toString("utf8"));
   }
   try {
     const metadata = await json(`https://api.github.com/repos/${repo.owner}/${repo.name}`);
     if (metadata.private || typeof metadata.default_branch !== "string" || metadata.default_branch.length > 200) throw new BugLensError("REPOSITORY_UNAVAILABLE", "Only public repositories with a default branch are supported.");
     const commit = await json(`https://api.github.com/repos/${repo.owner}/${repo.name}/commits/${encodeURIComponent(metadata.default_branch)}`);
     if (typeof commit.sha !== "string" || !/^[a-f0-9]{40}$/.test(commit.sha)) throw new BugLensError("REPOSITORY_UNAVAILABLE", "A fixed repository commit could not be established.");
+    const repository = { ...repo, branch: metadata.default_branch, commit: commit.sha };
+    async function selective() {
+      const listing = await json(`https://api.github.com/repos/${repo.owner}/${repo.name}/git/trees/${commit.sha}?recursive=1`, 16 * 1024 * 1024);
+      if (!Array.isArray(listing.tree)) throw new BugLensError("REPOSITORY_UNAVAILABLE", "GitHub did not return a source-file listing.");
+      const entries = listing.tree.filter((e) => e && typeof e.path === "string" && e.type !== "tree");
+      const eligible = entries.filter((e) => e.type === "blob" && e.mode !== "120000" && eligiblePath(e.path));
+      const priority2 = (p) => /(?:^|\/)(?:package(?:-lock)?\.json|requirements\.txt|Dockerfile)$/.test(p) ? 0 : /(?:auth|security|middleware|server|route|api)/i.test(p) ? 1 : /(?:src|app|lib)\//.test(p) ? 2 : 3;
+      const selected = [];
+      let reserved = 0;
+      for (const entry of eligible.sort((a, b) => priority2(a.path) - priority2(b.path) || a.path.localeCompare(b.path))) {
+        const limit = /(?:^|\/)package-lock\.json$/.test(entry.path) ? 2e6 : 256e3;
+        if (!Number.isSafeInteger(entry.size) || entry.size < 0 || entry.size > limit || selected.length >= 150 || reserved + entry.size > MAX_SOURCE) continue;
+        selected.push(entry);
+        reserved += entry.size;
+      }
+      const files = [];
+      let index = 0;
+      const deadline = Date.now() + 4e4;
+      await Promise.all(Array.from({ length: 8 }, async () => {
+        while (index < selected.length && Date.now() < deadline) {
+          const entry = selected[index++];
+          try {
+            const url = `https://raw.githubusercontent.com/${repo.owner}/${repo.name}/${commit.sha}/${entry.path.split("/").map(encodeURIComponent).join("/")}`;
+            const response2 = await request(url, { redirect: "error", cache: "no-store", signal: AbortSignal.timeout(Math.min(8e3, Math.max(1, deadline - Date.now()))) });
+            if (!response2.ok) {
+              await response2.body?.cancel();
+              continue;
+            }
+            const data = await boundedResponse(response2, entry.size);
+            if (data.length !== entry.size || data.includes(0)) continue;
+            files.push({ path: entry.path, content: data.toString("utf8"), sha256: createHash("sha256").update(data).digest("hex") });
+          } catch {
+          }
+        }
+      }));
+      if (!files.length) throw new BugLensError("REPOSITORY_UNAVAILABLE", "No supported source files could be fetched from this repository's file listing.");
+      return { repository, files: files.sort((a, b) => a.path.localeCompare(b.path)), totalFiles: entries.length, eligibleFiles: eligible.length, skippedFiles: entries.length - files.length, sensitivePaths: entries.filter((e) => safeReviewPath(e.path) && sensitivePath(e.path)).map((e) => e.path).slice(0, 50), bytes: files.reduce((n, f) => n + Buffer.byteLength(f.content), 0), truncated: listing.truncated === true || files.length < eligible.length, importNote: `Large-repository selective import: fetched ${files.length} source files without downloading the full archive. Limited to 150 files / 8 MB, prioritizing manifests, security, API and application paths. ${listing.truncated === true ? "GitHub truncated its file listing; displayed totals are lower bounds, not full-repository counts." : "Skipped files and unsupported assets were not reviewed."}` };
+    }
+    if (typeof metadata.size === "number" && metadata.size > 20 * 1024) return await selective();
     const response = await request(`https://codeload.github.com/${repo.owner}/${repo.name}/tar.gz/${commit.sha}`, { redirect: "error", cache: "no-store", signal: AbortSignal.timeout(25e3) });
     if (!response.ok) throw new BugLensError("REPOSITORY_UNAVAILABLE", "The repository snapshot could not be downloaded.");
-    return { repository: { ...repo, branch: metadata.default_branch, commit: commit.sha }, ...await parseArchive(await boundedResponse(response, MAX_ARCHIVE)) };
+    try {
+      return { repository, ...await parseArchive(await boundedResponse(response, MAX_ARCHIVE)) };
+    } catch (error) {
+      if (error instanceof RepositorySizeError || error instanceof BugLensError && error.message.includes("64 MB expanded")) return await selective();
+      throw error;
+    }
   } catch (error) {
     if (error instanceof BugLensError) throw error;
     throw new BugLensError("REPOSITORY_UNAVAILABLE", "GitHub could not be reached or the repository response was invalid. Retry later.");
@@ -781,6 +833,7 @@ async function runRepositoryReview(input, services = {}) {
     "Generated fix prompts must be reviewed and used in an authorized local checkout or isolated coding environment; they are not executable shell commands.",
     "Source inspection is limited to supported text files: 1,000 files, 8 MB total, 256 KB each (2 MB for package-lock.json), with a 20 MB compressed / 64 MB expanded archive cap.",
     ...dependencies.warnings,
+    ...snapshot.importNote ? [snapshot.importNote] : [],
     ...snapshot.truncated ? ["The repository exceeded one or more inspection limits. Some eligible files were not inspected."] : [],
     ...snapshot.sensitivePaths.length ? [`${snapshot.sensitivePaths.length} sensitive-looking file paths were skipped without reading their contents into the review.`] : [],
     ...ai ? [`Gemma reviewed bounded excerpts of ${ai.files.length} files, at most 45,000 characters total; it did not review every source line. Common credentials were redacted, but automated redaction is not exhaustive.`] : ["AI code review was not requested. Source findings are from deterministic rules only."]

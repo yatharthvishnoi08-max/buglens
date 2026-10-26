@@ -16,6 +16,26 @@ async function archive(entries: { name: string; content?: string; type?: "file" 
   tar.finalize(); return done;
 }
 describe("bounded public repository importer", () => {
+  it("selectively imports large repositories without downloading assets or symlinks", async () => {
+    const request = vi.fn().mockResolvedValueOnce(Response.json({ private: false, default_branch: "main", size: 90000 })).mockResolvedValueOnce(Response.json({ sha: "b".repeat(40) })).mockResolvedValueOnce(Response.json({ truncated: true, tree: [
+      { path: "src/app.ts", type: "blob", mode: "100644", size: 2 },
+      { path: "movie.mp4", type: "blob", mode: "100644", size: 90000000 },
+      { path: "src/link.ts", type: "blob", mode: "120000", size: 2 },
+      { path: "../escape.ts", type: "blob", mode: "100644", size: 2 },
+    ] })).mockResolvedValueOnce(new Response("ok"));
+    const result = await loadGitHubRepository(snapshot.repository.url, request);
+    expect(result.files.map(f => f.path)).toEqual(["src/app.ts"]);
+    expect(result.truncated).toBe(true);
+    expect(result.importNote).toContain("lower bounds");
+    expect(request.mock.calls[3]![0]).toBe(`https://raw.githubusercontent.com/example/app/${"b".repeat(40)}/src/app.ts`);
+    expect(request.mock.calls.some(c => c[0].includes("codeload"))).toBe(false);
+  });
+  it("falls back to selective import when archive content-length exceeds the limit", async () => {
+    const request = vi.fn().mockResolvedValueOnce(Response.json({ private: false, default_branch: "main" })).mockResolvedValueOnce(Response.json({ sha: "b".repeat(40) })).mockResolvedValueOnce(new Response("oversized", { headers: { "content-length": "30000000" } })).mockResolvedValueOnce(Response.json({ tree: [{ path: "app.ts", type: "blob", mode: "100644", size: 2 }] })).mockResolvedValueOnce(new Response("ok"));
+    const result = await loadGitHubRepository(snapshot.repository.url, request);
+    expect(result.files).toHaveLength(1);
+    expect(result.importNote).toContain("selective import");
+  });
   it("normalizes a public GitHub repository", () => expect(parseGitHubUrl("https://github.com/example/app.git").url).toBe(snapshot.repository.url));
   it.each(["http://github.com/example/app", "https://localhost/example/app", "https://github.com.evil.test/a/b", "https://user:pass@github.com/a/b", "https://github.com/a/b?token=x", "https://github.com/a/b/tree/main", "https://127.0.0.1/a/b", "https://github.com/a/b#fragment"])("rejects unsupported URL %s", input => expect(() => parseGitHubUrl(input)).toThrow());
   it("rejects unsafe paths and never follows symlinks or includes secret/build files", async () => {

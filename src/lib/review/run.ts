@@ -48,6 +48,7 @@ export async function runRepositoryReview(input: ReviewInput, services: { load?:
     "Generated fix prompts must be reviewed and used in an authorized local checkout or isolated coding environment; they are not executable shell commands.",
     "Source inspection is limited to supported text files: 1,000 files, 8 MB total, 256 KB each (2 MB for package-lock.json), with a 20 MB compressed / 64 MB expanded archive cap.",
     ...dependencies.warnings,
+    ...(snapshot.importNote ? [snapshot.importNote] : []),
     ...(snapshot.truncated ? ["The repository exceeded one or more inspection limits. Some eligible files were not inspected."] : []),
     ...(snapshot.sensitivePaths.length ? [`${snapshot.sensitivePaths.length} sensitive-looking file paths were skipped without reading their contents into the review.`] : []),
     ...(ai ? [`Gemma reviewed bounded excerpts of ${ai.files.length} files, at most 45,000 characters total; it did not review every source line. Common credentials were redacted, but automated redaction is not exhaustive.`] : ["AI code review was not requested. Source findings are from deterministic rules only."]),

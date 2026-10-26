@@ -19,6 +19,7 @@ export type Snapshot = {
   repository: { owner: string; name: string; url: string; commit: string; branch: string };
   files: SourceFile[]; totalFiles: number; eligibleFiles: number; skippedFiles: number;
   sensitivePaths: string[]; truncated: boolean; bytes: number;
+  importNote?: string;
 };
 export const ReviewResultSchema = z.object({
   kind: z.literal("repository-review"),
