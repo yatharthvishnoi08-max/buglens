@@ -26,6 +26,8 @@ Release browser run: **7 passed, 1 intentionally skipped, 16.8 seconds**. The sk
 
 Browser journeys reported no uncaught page JavaScript errors. This is narrower than asserting there are no console/network warnings. The repository journey intercepts the HTTP response with data produced by the real static pipeline on a controlled snapshot. It does **not** prove a live GitHub, OSV or Gemma request succeeded. The sample uses explicit pre-authored synthetic model output.
 
+Gemma 4 wording follow-up on 26 October: production build and all seven browser tests passed again (17.2 seconds; one duplicate matrix invocation skipped). The entry test now asserts that Gemma 4 source review starts checked and that the guide identifies it as enabled by default, without the former qualifier. Review controls, consent requirements and runtime behavior are unchanged. Diagrams and the four-page PDF were re-rendered and visually checked.
+
 ## Defects encountered and retested
 
 - The first UI pass exposed a mobile sample result heading scrolled outside the viewport. The UI focus/scroll timing was adjusted after route transition; the unchanged heading-visibility assertion subsequently passed.

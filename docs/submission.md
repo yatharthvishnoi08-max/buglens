@@ -17,7 +17,7 @@ For a reliable no-key walkthrough, deselect Gemma and dependency checking and ru
 Show `skills/buglens/SKILL.md`, the bundled executable scripts and generated schemas. Run `npm run skill:review -- --github https://github.com/owner/repo --artifact report`. The website and skill share the same pipeline. The skill ZIP runs independently after installing its runtime dependencies.
 
 ## Gemma role
-The only live model is `gemma-4-26b-a4b-it`, called through the Gemini API transport. It provides source-level review and optional multimodal screenshot analysis. Deterministic validators check source references and provenance; they do not prove the conclusions.
+The only live model is `gemma-4-26b-a4b-it`, called through the Gemini API transport. It provides source-level review and multimodal screenshot analysis when an image is supplied. Deterministic validators check source references and provenance; they do not prove the conclusions.
 
 ## Recording tips and limits
 Record the production URL, not a protected Vercel preview URL. Keep credentials and environment files off screen. Do not cut an API failure into a fake success; show the explicit error or a clearly labeled earlier successful recording. Download reports before refreshing.

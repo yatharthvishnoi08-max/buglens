@@ -12,7 +12,7 @@ A screenshot shows a symptom. A stack trace shows a failure. A repository contai
 
 BugLens brings that context into one repository-first workflow:
 
-1. **Review the code.** Inspect a commit-pinned repository with deterministic source checks, optional Gemma 4 review and optional npm dependency advisories.
+1. **Review the code.** Inspect a commit-pinned repository with deterministic source checks, Gemma 4 review and npm dependency advisories. Gemma 4 source review is enabled by default in the web app; the review controls let you choose which external checks run.
 2. **Investigate the reported problem.** Supply text, logs, code attachments or a screenshot with expected and actual behavior.
 3. **Leave with an actionable handoff.** Review source references and coverage, then download documentation and verification-first fix prompts.
 

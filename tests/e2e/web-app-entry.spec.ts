@@ -6,8 +6,12 @@ test("web app needs no install and agent downloads are explicitly optional ZIPs"
   await page.getByRole("link", { name: "Open web app", exact: true }).click();
   await expect(page).toHaveURL(/\/demo$/);
   await expect(page.getByRole("heading", { name: "Start with your GitHub repository." })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: /Gemma 4 source review/ })).toBeChecked();
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Guide", exact: true }).click();
   const downloads = page.locator("#install");
+  await expect(page.locator("#coverage")).toContainText("Enabled by default in the web app");
+  await expect(page.getByRole("heading", { name: "Gemma 4 screenshot analysis", exact: true })).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(/optional(?:ly)?\s+Gemma/i);
   await expect(downloads.getByRole("heading", { name: "Use BugLens in your browser." })).toBeVisible();
   await expect(downloads).toContainText("It is not a desktop app or an installer");
   await expect(downloads.getByRole("link", { name: "Open web app", exact: true })).toHaveAttribute("href", "/demo");

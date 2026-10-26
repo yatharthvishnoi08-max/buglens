@@ -1,6 +1,6 @@
 # Architecture and trust boundaries
 
-Current source: local `ui-antigravity` working tree based on `7d1847f`; public deployment is the prior release. No database, authentication service or automatic repair executor exists.
+The repository-first UI and refreshed branding were published in release `a6605e5`. No database, authentication service or automatic repair executor exists.
 
 ## Component boundaries
 
@@ -26,23 +26,23 @@ flowchart LR
     browserUi -->|"Multipart request"| ingress
     ingress -->|"Route review"| apiRuntime
     apiRuntime -.->|"GitHub: fetch snapshot"| githubSource
-    apiRuntime -.->|"Google: optional review"| googleModel
+    apiRuntime -.->|"Google: Gemma review"| googleModel
     apiRuntime -.->|"OSV: optional query"| osvService
     localCli -.->|"GitHub: fetch snapshot"| githubSource
-    localCli -.->|"Google: optional review"| googleModel
+    localCli -.->|"Google: Gemma review"| googleModel
     localCli -.->|"OSV: optional query"| osvService
 ```
 
 [Standalone architecture SVG](assets/diagrams/architecture.svg).
 
-The Node API and local skill are alternative runtimes for the same library, not separate network microservices calling each other. API responses travel back through the hosting route as NDJSON; local CLI artifacts go to the local caller. Browser state, archives and intermediate results are memory-only, so there is no datastore node. Optional external calls occur only when requested. The diagram omits the legacy screenshot-only path for clarity.
+The Node API and local skill are alternative runtimes for the same library, not separate network microservices calling each other. API responses travel back through the hosting route as NDJSON; local CLI artifacts go to the local caller. Browser state, archives and intermediate results are memory-only, so there is no datastore node. External calls occur only when selected and authorized. The diagram omits the legacy screenshot-only path for clarity.
 
 [Processing flowcharts](FLOWCHARTS.md) · [API reference](API_REFERENCE.md) · [Scalability assessment](SCALABILITY_REPORT.md) · [Security boundaries](SECURITY_AND_PRIVACY.md)
 
 | Layer | Responsibility | Source |
 | --- | --- | --- |
 | React containers | State, callbacks, fetch, stream parsing and navigation | [RepositoryWorkspace](../src/components/RepositoryWorkspace.tsx), [DemoWorkspace](../src/components/DemoWorkspace.tsx) |
-| Presentation views (local redesign only) | Layout, labels, status and controls; no service requests | `src/components/RepositoryWorkspaceView.tsx`, `src/components/DemoWorkspaceView.tsx` on the local UI branch |
+| Presentation views | Layout, labels, status and controls; no service requests | `src/components/RepositoryWorkspaceView.tsx`, `src/components/DemoWorkspaceView.tsx` |
 | Node API | Limits, multipart validation, consent and NDJSON | [Review route](../src/app/api/review-repository/route.ts) |
 | Shared pipeline | Import, checks, evidence validation and compilation | [run.ts](../src/lib/review/run.ts) |
 | Browser session | Memory-only result and preview | [ReportSession](../src/components/ReportSession.tsx) |
@@ -70,7 +70,7 @@ The browser sends a public GitHub URL, review options, optional problem text/fil
 1. Validate the URL and input limits. Only fixed HTTPS GitHub API and codeload hosts are requested; redirects are disabled.
 2. Resolve the default branch to a commit SHA. Download a bounded archive and parse it in memory. No Git hooks, dependencies, repository code or tests run.
 3. Skip unsafe paths, symlinks, sensitive-looking files and dependency/build folders. Apply size/file limits and record coverage.
-4. Run deterministic source-pattern checks over included supported files. In parallel, optionally request Gemma code review, OSV npm advisory matches and Gemma screenshot analysis.
+4. Run deterministic source-pattern checks over included supported files. Run the selected external checks in parallel: Gemma 4 code review, OSV npm advisory matches and Gemma 4 screenshot analysis. Source review is enabled by default in the web app; screenshot analysis runs when an image is supplied. External processing requires consent.
 5. Require exact supplied path, line and quote for every model source finding. Label all findings as needing verification. Keep screenshots, reporter statements and source hypotheses distinct.
 6. Compile report, remediation documentation and coding-agent prompts. Include evidence, coverage and explicit runtime gaps.
 

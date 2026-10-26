@@ -17,8 +17,8 @@ flowchart LR
     browserUi -->|"Multipart request"| ingress
     ingress -->|"Route review"| apiRuntime
     apiRuntime -.->|"GitHub: fetch snapshot"| githubSource
-    apiRuntime -.->|"Google: optional review"| googleModel
+    apiRuntime -.->|"Google: Gemma review"| googleModel
     apiRuntime -.->|"OSV: optional query"| osvService
     localCli -.->|"GitHub: fetch snapshot"| githubSource
-    localCli -.->|"Google: optional review"| googleModel
+    localCli -.->|"Google: Gemma review"| googleModel
     localCli -.->|"OSV: optional query"| osvService

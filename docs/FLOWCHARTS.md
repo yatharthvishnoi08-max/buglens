@@ -9,7 +9,7 @@ flowchart TD
     startUser["Enter public GitHub URL"] --> chooseMode{"Choose review scope"}
     chooseMode -->|"Broad"| broadReview["Repository-wide review"]
     chooseMode -->|"Problem"| suppliedEvidence["Add text, files or screenshot"]
-    broadReview --> selectChecks["Select optional checks"]
+    broadReview --> selectChecks["Configure review checks"]
     suppliedEvidence --> selectChecks
     selectChecks --> consentCheck{"External processing requested"}
     consentCheck -->|"Yes"| obtainConsent["Read notice and consent"]
@@ -35,8 +35,8 @@ flowchart TD
     evidenceValidation --> snapshotLoad["Pin commit and load bounded archive"]
     snapshotLoad --> staticRules["Run deterministic source checks"]
     staticRules --> parallelChecks["Start requested external checks"]
-    parallelChecks --> sourceCheck["Optional Gemma source review"]
-    parallelChecks --> visualCheck["Optional Gemma screenshot review"]
+    parallelChecks --> sourceCheck["Gemma 4 source review"]
+    parallelChecks --> visualCheck["Gemma 4 screenshot review"]
     parallelChecks --> dependencyCheck["Optional OSV dependency check"]
     sourceCheck --> combineFindings["Validate and combine results"]
     visualCheck --> combineFindings

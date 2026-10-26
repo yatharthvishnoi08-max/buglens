@@ -49,7 +49,7 @@ export function RepositoryWorkspaceView(p: Props) {
           <section className="form-section review-options" aria-labelledby="options-heading">
             <div className="section-heading"><span className="section-number">03</span><h2 id="options-heading">Set your checks</h2></div>
             <div className="included-check"><span className="check-icon"><Icon name="check" size={16}/></span><div><strong>Static source checks</strong><small>Included in every review. No AI required.</small></div><span className="badge green">Always on</span></div>
-            <label className="analysis-option"><input type="checkbox" checked={p.includeAI} disabled={p.running} onChange={e => p.onAIChange(e.target.checked)}/><span><strong>Gemma 4 source review</strong><small>AI review of selected source excerpts and your evidence.</small></span><span className="option-tag">Google</span></label>
+            <label className="analysis-option"><input type="checkbox" checked={p.includeAI} disabled={p.running} onChange={e => p.onAIChange(e.target.checked)}/><span><strong>Gemma 4 source review</strong><small>Gemma 4 reviews selected source excerpts and your evidence. Enabled by default.</small></span><span className="option-tag">Google</span></label>
             <label className="analysis-option"><input type="checkbox" checked={p.dependencies} disabled={p.running} onChange={e => p.onDependenciesChange(e.target.checked)}/><span><strong>Known dependency vulnerabilities</strong><small>Advisory checks for up to 200 exact npm versions.</small></span><span className="option-tag">OSV</span></label>
           </section>
           {(p.includeAI || p.dependencies || p.attach) && <section className="privacy-box" aria-labelledby="processing-heading">

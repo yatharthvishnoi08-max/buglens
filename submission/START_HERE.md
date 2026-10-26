@@ -18,4 +18,4 @@ The archive includes a file manifest. Source-code links in its Markdown copies p
 
 Upload `Complete_Documentation_Package.zip` as one file when the organizer permits ZIPs. If only a PDF is requested, upload `Project_Submission_Report.pdf` instead. Confirm organizer rules first. No Google Drive upload or hackathon entry submission has been performed.
 
-This source release includes the UI redesign and refreshed logo. Confirm the deployed Vercel version before demonstrating it. The submission PDF is an earlier documentation snapshot; consult the README and test report for release updates. Capacity and load-test plans are explicitly proposed; live Gemma source-review verification remains incomplete.
+This source release includes the UI redesign and refreshed logo. Confirm the deployed Vercel version before demonstrating it. The submission PDF includes the published UI and Gemma 4 wording update; consult the README and test report for detailed evidence. Capacity and load-test plans are explicitly proposed; live Gemma source-review verification remains incomplete.
