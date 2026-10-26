@@ -1,5 +1,34 @@
 # Architecture and trust boundaries
 
+Current source: local `ui-antigravity` working tree based on `7d1847f`; public deployment is the prior release. No database, authentication service or automatic repair executor exists.
+
+## Component boundaries
+
+| Layer | Responsibility | Source |
+| --- | --- | --- |
+| React containers | State, callbacks, fetch, stream parsing and navigation | [RepositoryWorkspace](../src/components/RepositoryWorkspace.tsx), [DemoWorkspace](../src/components/DemoWorkspace.tsx) |
+| Presentation views (local redesign only) | Layout, labels, status and controls; no service requests | `src/components/RepositoryWorkspaceView.tsx`, `src/components/DemoWorkspaceView.tsx` on the local UI branch |
+| Node API | Limits, multipart validation, consent and NDJSON | [Review route](../src/app/api/review-repository/route.ts) |
+| Shared pipeline | Import, checks, evidence validation and compilation | [run.ts](../src/lib/review/run.ts) |
+| Browser session | Memory-only result and preview | [ReportSession](../src/components/ReportSession.tsx) |
+| Skill CLI | Same review implementation without a browser | [Review script](../skills/buglens/scripts/review-repository.ts) |
+
+Input repository/symptoms become a commit-pinned snapshot, then evidence-linked leads, then findings, documentation and fix prompts. The browser never executes those prompts.
+
+## HTTP interface
+
+`POST /api/review-repository` accepts multipart data with exactly one `options` JSON field and at most one `image`. Static-only example (replace the example URL):
+
+```json
+{"repositoryUrl":"https://github.com/owner/repo","mode":"repository","includeAI":false,"checkDependencies":false,"consent":false,"problem":{"text":"","attachments":[]}}
+```
+
+`mode` also accepts `problem`. Attachments contain `name` and `text`. With an image, `context` includes `expectedBehavior`, `actualBehavior` and optional `environment`. AI, OSV or image processing requires `consent:true`. A differing Origin/Host is rejected when Origin is present; this is not authentication.
+
+The response uses `application/x-ndjson`: `{type:"stage",message}`, followed by `{type:"result",result}` or `{type:"error",error:{code,message}}`. HTTP 200 can contain an application error; parse the stream. Pre-stream errors use JSON (normally 400, 413 for size, 403 for origin). The exact [result schema](../src/lib/review/schema.ts) is authoritative.
+
+The separate `POST /api/analyze-visual` serves the original screenshot workflow. `GET /api/sample-image?id=clipping` serves a bundled sample; neither replaces repository review.
+
 ## Repository review
 The browser sends a public GitHub URL, review options, optional problem text/files and an optional screenshot to the Node-only `/api/review-repository` route. The standalone skill calls the same `runRepositoryReview` pipeline.
 
